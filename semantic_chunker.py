@@ -1,102 +1,147 @@
-"""Split the text where the meaning changes.
+"""Semantic chunking: cut each section's text where the meaning changes.
 
-How it works:
-  1. Turn every sentence into an embedding (a list of numbers capturing meaning).
-  2. For each gap between sentences, compare the sentences just before it with
-     the sentences just after it. A low similarity means the topic is shifting.
-  3. Start a new chunk at the biggest topic shifts.
-  4. Clean up: merge chunks that are too small, split chunks that are too big.
+Uses LangChain's SemanticChunker. It embeds the sentences, measures how far
+apart neighbouring sentences are in meaning, and starts a new chunk wherever
+that distance jumps.
+
+Usage:
+    python3 semantic_chunker.py [threshold] [min_chunk_chars]
+    python3 semantic_chunker.py 90 200
+
+    threshold       = percentile (0-100) of sentence-to-sentence distances.
+                      A gap becomes a chunk break only if its distance is above
+                      this percentile. Higher = fewer, bigger chunks.
+    min_chunk_chars = chunks shorter than this are merged into a neighbour.
+
+Reads  data/sections.json         (output of scraper.py)
+Writes data/chunks_semantic.json  (same record format as chunks_character.json)
 """
-import numpy as np
+import json
+import re
+import sys
+from pathlib import Path
+
+IN_PATH = Path("data/sections.json")
+OUT_PATH = Path("data/chunks_semantic.json")
 
 MODEL_NAME = "all-MiniLM-L6-v2"  # small, free, runs on your laptop
+SENTENCE_SPLIT = r"(?<=[.?!])\s+"  # same default LangChain uses
+MIN_SENTENCES_TO_SPLIT = 4  # sections with fewer sentences stay as one chunk
 
 
-def load_embedder(model_name=MODEL_NAME):
+def load_embeddings(model_name=MODEL_NAME):
     """Load the free sentence-embedding model (downloads it the first time)."""
-    from sentence_transformers import SentenceTransformer
+    from langchain_huggingface import HuggingFaceEmbeddings
 
-    model = SentenceTransformer(model_name)
-
-    def embed(texts):
-        vectors = model.encode(list(texts), normalize_embeddings=True, show_progress_bar=False)
-        return np.asarray(vectors)
-
-    return embed
+    return HuggingFaceEmbeddings(
+        model_name=model_name,
+        encode_kwargs={"normalize_embeddings": True},
+    )
 
 
-def _cosine(a, b):
-    denom = np.linalg.norm(a) * np.linalg.norm(b)
-    return float(a @ b / denom) if denom else 0.0
+def make_chunker(embeddings, threshold=90, min_chunk_chars=200):
+    """Build the LangChain chunker. `embeddings` is any LangChain Embeddings object."""
+    from langchain_experimental.text_splitter import SemanticChunker
+
+    return SemanticChunker(
+        embeddings,
+        breakpoint_threshold_type="percentile",
+        breakpoint_threshold_amount=threshold,
+        min_chunk_size=min_chunk_chars,
+        sentence_split_regex=SENTENCE_SPLIT,
+    )
 
 
-def chunk_semantic(sentences, embed_fn, window=2, percentile=15, min_sentences=2, max_chars=1200):
+def _locate_spans(text, pieces):
+    """Find where each chunk sits in the original text, as (start, end) offsets.
+
+    LangChain returns chunk strings, and it re-joins sentences with single
+    spaces, so a chunk can differ from the original in whitespace. We match
+    word by word, ignoring whitespace differences, so the offsets always point
+    at the original text. (LangChain's own add_start_index is not used because
+    it drifts: it adds up chunk lengths and ignores the removed whitespace.)
+    """
+    spans = []
+    cursor = 0
+    for piece in pieces:
+        words = piece.split()
+        if not words:
+            continue
+        pattern = re.compile(r"\s*(" + r"\s+".join(re.escape(w) for w in words) + ")")
+        match = pattern.match(text, cursor)
+        if match is None:  # should not happen; fall back to searching ahead
+            match = pattern.search(text, cursor)
+        if match is None:
+            raise ValueError(f"could not locate chunk in section text: {piece[:60]!r}")
+        spans.append((match.start(1), match.end(1)))
+        cursor = match.end(1)
+    return spans
+
+
+def _merge_small_tail(spans, min_chunk_chars):
+    """LangChain only merges small chunks forward, so fix a tiny last chunk here."""
+    if len(spans) > 1 and spans[-1][1] - spans[-1][0] < min_chunk_chars:
+        spans[-2:] = [(spans[-2][0], spans[-1][1])]
+    return spans
+
+
+def chunk_semantic(text, chunker, min_chunk_chars=200):
     """Return (start, end) character spans, one per semantic chunk.
 
-    sentences     = list of Sentence objects (see chunk_utils.py)
-    window        = how many sentences on each side of a gap to compare
-    percentile    = the lowest X% of gap similarities become topic shifts
-    min_sentences = chunks smaller than this get merged into a neighbor
-    max_chars     = chunks longer than this get split at their weakest gap
+    Same idea as chunk_characters() in character_chunker.py: you give it one
+    section's text, it gives back spans into that text.
     """
-    n = len(sentences)
-    if n == 0:
+    if not text.strip():
         return []
-    if n == 1:
-        return [(sentences[0].start, sentences[0].end)]
+    if len(re.split(SENTENCE_SPLIT, text)) < MIN_SENTENCES_TO_SPLIT:
+        return [(0, len(text))]
+    spans = _locate_spans(text, chunker.split_text(text))
+    return _merge_small_tail(spans, min_chunk_chars)
 
-    vectors = embed_fn([s.text for s in sentences])
 
-    # sims[i] = similarity across the gap between sentence i and sentence i+1
-    sims = []
-    for i in range(n - 1):
-        left = vectors[max(0, i - window + 1): i + 1].mean(axis=0)
-        right = vectors[i + 1: i + 1 + window].mean(axis=0)
-        sims.append(_cosine(left, right))
-    sims = np.array(sims)
+def chunk_sections(sections, chunker, min_chunk_chars=200):
+    """Chunk each section separately so no chunk crosses a heading or page.
 
-    # Pick the weakest gaps, but not two shifts right next to each other.
-    threshold = np.percentile(sims, percentile)
-    candidates = sorted((i for i in range(n - 1) if sims[i] <= threshold), key=lambda i: sims[i])
-    breaks = []
-    for i in candidates:
-        if all(abs(i - j) >= window for j in breaks):
-            breaks.append(i)
-    breaks.sort()
+    start/end are offsets inside that section's "text" field.
+    """
+    chunks = []
+    for sec_id, sec in enumerate(sections):
+        text = sec["text"]
+        for i, (start, end) in enumerate(chunk_semantic(text, chunker, min_chunk_chars)):
+            chunks.append({
+                "chunk_id": f"sem-{sec_id}-{i}",
+                "strategy": "semantic",
+                "source_url": sec["source_url"],
+                "domain": sec["domain"],
+                "page_title": sec["page_title"],
+                "heading": sec["heading"],
+                "section_id": sec_id,
+                "start": start,
+                "end": end,
+                "text": text[start:end],
+            })
+    return chunks
 
-    # Groups are inclusive (first_sentence, last_sentence) index pairs.
-    groups, first = [], 0
-    for b in breaks:
-        groups.append((first, b))
-        first = b + 1
-    groups.append((first, n - 1))
 
-    # Merge groups that are too small into the neighbor they are most similar to.
-    while len(groups) > 1:
-        small = next((k for k, (a, b) in enumerate(groups) if b - a + 1 < min_sentences), None)
-        if small is None:
-            break
-        if small == 0:
-            target = 1
-        elif small == len(groups) - 1:
-            target = small - 1
-        else:
-            before = sims[groups[small][0] - 1]
-            after = sims[groups[small][1]]
-            target = small - 1 if before >= after else small + 1
-        lo, hi = sorted((small, target))
-        groups[lo:hi + 1] = [(groups[lo][0], groups[hi][1])]
+def summarize(chunks):
+    lengths = [len(c["text"]) for c in chunks]
+    return (f"{len(chunks)} chunks | chars min/mean/max = "
+            f"{min(lengths)}/{sum(lengths) // len(lengths)}/{max(lengths)}")
 
-    # Split groups that are too long at their weakest internal gap.
-    final, stack = [], list(reversed(groups))
-    while stack:
-        a, b = stack.pop()
-        length = sentences[b].end - sentences[a].start
-        if length > max_chars and b > a:
-            cut = a + int(np.argmin(sims[a:b]))
-            stack.append((cut + 1, b))
-            stack.append((a, cut))
-        else:
-            final.append((a, b))
 
-    return [(sentences[a].start, sentences[b].end) for a, b in final]
+def main():
+    threshold = float(sys.argv[1]) if len(sys.argv) > 1 else 90
+    min_chunk_chars = int(sys.argv[2]) if len(sys.argv) > 2 else 200
+
+    sections = json.loads(IN_PATH.read_text())
+    chunker = make_chunker(load_embeddings(), threshold, min_chunk_chars)
+    chunks = chunk_sections(sections, chunker, min_chunk_chars)
+    OUT_PATH.parent.mkdir(exist_ok=True)
+    OUT_PATH.write_text(json.dumps(chunks, indent=2, ensure_ascii=False))
+    print(f"{len(sections)} sections (threshold={threshold}, min_chunk_chars={min_chunk_chars}) "
+          f"-> {summarize(chunks)}")
+    print(f"wrote {OUT_PATH}")
+
+
+if __name__ == "__main__":
+    main()
