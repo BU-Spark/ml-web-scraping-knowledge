@@ -133,11 +133,11 @@ def main():
     threshold = float(sys.argv[1]) if len(sys.argv) > 1 else 90
     min_chunk_chars = int(sys.argv[2]) if len(sys.argv) > 2 else 200
 
-    sections = json.loads(IN_PATH.read_text())
+    sections = json.loads(IN_PATH.read_text(encoding="utf-8"))
     chunker = make_chunker(load_embeddings(), threshold, min_chunk_chars)
     chunks = chunk_sections(sections, chunker, min_chunk_chars)
     OUT_PATH.parent.mkdir(exist_ok=True)
-    OUT_PATH.write_text(json.dumps(chunks, indent=2, ensure_ascii=False))
+    OUT_PATH.write_text(json.dumps(chunks, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"{len(sections)} sections (threshold={threshold}, min_chunk_chars={min_chunk_chars}) "
           f"-> {summarize(chunks)}")
     print(f"wrote {OUT_PATH}")
