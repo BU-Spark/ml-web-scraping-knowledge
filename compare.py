@@ -19,7 +19,7 @@ import numpy as np
 
 from character_chunker import chunk_characters
 from chunk_utils import build_document, measure, normalize_ws, spans_to_chunks
-from semantic_chunker import chunk_semantic, load_embedder
+from semantic_chunker import chunk_semantic, load_embeddings, make_chunker
 
 
 def find_section(headings, wanted):
@@ -144,13 +144,23 @@ def render_html(source_url, settings, metrics, chunks_by_method, questions, retr
     return "\n".join(out)
 
 
-def run(sections, source_url, embed_fn, questions, size=500, overlap=50,
-        window=2, percentile=15, out_dir="data"):
+def semantic_spans(doc, sections, chunker, min_chunk_chars):
+    """Chunk each section on its own, then shift the spans to fit the joined text."""
+    spans = []
+    for idx, sec in enumerate(sections):
+        base = doc["section_ranges"][idx][0]
+        for start, end in chunk_semantic(sec["text"].strip(), chunker, min_chunk_chars):
+            spans.append((base + start, base + end))
+    return spans
+
+
+def run(sections, source_url, chunker, embed_fn, questions, size=500, overlap=50,
+        threshold=90, min_chunk_chars=200, out_dir="data"):
     """Chunk the page both ways, measure, test retrieval, and write the outputs."""
     doc = build_document(sections)
     chunks_by_method = {
         "character": spans_to_chunks(chunk_characters(doc["text"], size, overlap), doc, "character", source_url),
-        "semantic": spans_to_chunks(chunk_semantic(doc["sentences"], embed_fn, window, percentile), doc, "semantic", source_url),
+        "semantic": spans_to_chunks(semantic_spans(doc, sections, chunker, min_chunk_chars), doc, "semantic", source_url),
     }
     metrics = {m: measure(c) for m, c in chunks_by_method.items()}
     retrieval = {m: evaluate_questions(questions, c, doc, embed_fn) for m, c in chunks_by_method.items()} if questions else {}
@@ -159,10 +169,12 @@ def run(sections, source_url, embed_fn, questions, size=500, overlap=50,
     out.mkdir(exist_ok=True)
     for m, c in chunks_by_method.items():
         (out / f"chunks_{m}.json").write_text(json.dumps(c, indent=2, ensure_ascii=False))
-    settings = f"character size={size}, overlap={overlap}; semantic window={window}, percentile={percentile}"
+    settings = (f"character size={size}, overlap={overlap}; "
+                f"semantic threshold={threshold}, min chunk chars={min_chunk_chars}")
     (out / "comparison.html").write_text(
         render_html(source_url, settings, metrics, chunks_by_method, questions, retrieval))
     return {"metrics": metrics, "retrieval": retrieval, "chunks": chunks_by_method}
+
 
 
 def main():
@@ -172,8 +184,10 @@ def main():
     parser.add_argument("--url", help="which page to use if sections.json has several")
     parser.add_argument("--size", type=int, default=500, help="character chunk size")
     parser.add_argument("--overlap", type=int, default=50, help="character chunk overlap")
-    parser.add_argument("--window", type=int, default=2, help="sentences compared on each side of a gap")
-    parser.add_argument("--percentile", type=float, default=15, help="lowest X%% of gaps become splits")
+    parser.add_argument("--threshold", type=float, default=90,
+                        help="semantic split sensitivity (percentile; higher = fewer, bigger chunks)")
+    parser.add_argument("--min-chunk-chars", type=int, default=200,
+                        help="semantic chunks shorter than this get merged into a neighbour")
     args = parser.parse_args()
 
     all_sections = json.loads(Path(args.sections).read_text())
@@ -182,16 +196,21 @@ def main():
     print(f"Page: {url} ({len(sections)} sections)")
 
     questions = load_questions(args.questions)
-    print(f"Test questions: {len(questions)}" +
-          ("" if questions else "  (fill in questions.json to add the retrieval test)"))
+    if questions:
+        print(f"Test questions: {len(questions)}")
 
     try:
         print("Loading the embedding model (the first run downloads it, then it works offline)...")
-        embed_fn = load_embedder()
+        embeddings = load_embeddings()
+        chunker = make_chunker(embeddings, args.threshold, args.min_chunk_chars)
     except ImportError:
-        raise SystemExit("Missing library. Run: python3 -m pip install sentence-transformers")
+        raise SystemExit("Missing library. Run: python -m pip install -r requirements.txt")
 
-    result = run(sections, url, embed_fn, questions, args.size, args.overlap, args.window, args.percentile)
+    # Only used by the optional questions test.
+    embed_fn = lambda texts: np.asarray(embeddings.embed_documents(list(texts)))
+
+    result = run(sections, url, chunker, embed_fn, questions, args.size, args.overlap,
+                 args.threshold, args.min_chunk_chars)
 
     print(f"\n{'':36}{'character':>12}{'semantic':>12}")
     c, s = result["metrics"]["character"], result["metrics"]["semantic"]
