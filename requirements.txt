@@ -1,3 +1,6 @@
 requests
 beautifulsoup4
 protego
+langchain-experimental
+langchain-huggingface
+sentence-transformers
