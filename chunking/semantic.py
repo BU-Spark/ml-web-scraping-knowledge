@@ -5,24 +5,24 @@ apart neighbouring sentences are in meaning, and starts a new chunk wherever
 that distance jumps.
 
 Usage:
-    python3 semantic_chunker.py [threshold] [min_chunk_chars]
-    python3 semantic_chunker.py 90 200
+    python3 -m chunking.semantic [threshold] [min_chunk_chars]
+    python3 -m chunking.semantic 90 200
 
     threshold       = percentile (0-100) of sentence-to-sentence distances.
                       A gap becomes a chunk break only if its distance is above
                       this percentile. Higher = fewer, bigger chunks.
     min_chunk_chars = chunks shorter than this are merged into a neighbour.
 
-Reads  data/sections.json         (output of scraper.py)
-Writes data/chunks_semantic.json  (same record format as chunks_character.json)
+Reads  data/output/sections.json         (output of the scraper)
+Writes data/output/chunks_semantic.json  (same record format as chunks_character.json)
 """
 import json
 import re
 import sys
 from pathlib import Path
 
-IN_PATH = Path("data/sections.json")
-OUT_PATH = Path("data/chunks_semantic.json")
+IN_PATH = Path("data/output/sections.json")
+OUT_PATH = Path("data/output/chunks_semantic.json")
 
 MODEL_NAME = "all-MiniLM-L6-v2"  # small, free, runs on your laptop
 SENTENCE_SPLIT = r"(?<=[.?!])\s+"  # same default LangChain uses
@@ -88,7 +88,7 @@ def _merge_small_tail(spans, min_chunk_chars):
 def chunk_semantic(text, chunker, min_chunk_chars=200):
     """Return (start, end) character spans, one per semantic chunk.
 
-    Same idea as chunk_characters() in character_chunker.py: you give it one
+    Same idea as chunk_characters() in chunking/character.py: you give it one
     section's text, it gives back spans into that text.
     """
     if not text.strip():
@@ -136,7 +136,7 @@ def main():
     sections = json.loads(IN_PATH.read_text(encoding="utf-8"))
     chunker = make_chunker(load_embeddings(), threshold, min_chunk_chars)
     chunks = chunk_sections(sections, chunker, min_chunk_chars)
-    OUT_PATH.parent.mkdir(exist_ok=True)
+    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(chunks, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"{len(sections)} sections (threshold={threshold}, min_chunk_chars={min_chunk_chars}) "
           f"-> {summarize(chunks)}")

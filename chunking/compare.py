@@ -1,14 +1,14 @@
 """Compare character chunking with semantic chunking on one scraped page.
 
 Usage:
-    python3 compare.py
-    python3 compare.py --size 500 --overlap 50 --window 2 --percentile 15
+    python3 -m chunking.compare
+    python3 -m chunking.compare --size 500 --overlap 50 --window 2 --percentile 15
 
-Reads:   data/sections.json   (made by scraper.py)
-         questions.json       (optional: your test questions)
-Writes:  data/chunks_character.json
-         data/chunks_semantic.json
-         data/comparison.html (open this in your browser for the demo)
+Reads:   data/output/sections.json   (made by the scraper)
+         questions.json              (optional: your test questions)
+Writes:  data/output/chunks_character.json
+         data/output/chunks_semantic.json
+         data/output/comparison.html (open this in your browser for the demo)
 """
 import argparse
 import html
@@ -17,9 +17,9 @@ from pathlib import Path
 
 import numpy as np
 
-from character_chunker import chunk_characters
-from chunk_utils import build_document, measure, normalize_ws, spans_to_chunks
-from semantic_chunker import chunk_semantic, load_embeddings, make_chunker
+from chunking.character import chunk_characters
+from chunking.semantic import chunk_semantic, load_embeddings, make_chunker
+from chunking.utils import build_document, measure, normalize_ws, spans_to_chunks
 
 
 def find_section(headings, wanted):
@@ -155,7 +155,7 @@ def semantic_spans(doc, sections, chunker, min_chunk_chars):
 
 
 def run(sections, source_url, chunker, embed_fn, questions, size=500, overlap=50,
-        threshold=90, min_chunk_chars=200, out_dir="data"):
+        threshold=90, min_chunk_chars=200, out_dir="data/output"):
     """Chunk the page both ways, measure, test retrieval, and write the outputs."""
     doc = build_document(sections)
     chunks_by_method = {
@@ -166,7 +166,7 @@ def run(sections, source_url, chunker, embed_fn, questions, size=500, overlap=50
     retrieval = {m: evaluate_questions(questions, c, doc, embed_fn) for m, c in chunks_by_method.items()} if questions else {}
 
     out = Path(out_dir)
-    out.mkdir(exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     for m, c in chunks_by_method.items():
         (out / f"chunks_{m}.json").write_text(json.dumps(c, indent=2, ensure_ascii=False))
     settings = (f"character size={size}, overlap={overlap}; "
@@ -179,7 +179,7 @@ def run(sections, source_url, chunker, embed_fn, questions, size=500, overlap=50
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--sections", default="data/sections.json")
+    parser.add_argument("--sections", default="data/output/sections.json")
     parser.add_argument("--questions", default="questions.json")
     parser.add_argument("--url", help="which page to use if sections.json has several")
     parser.add_argument("--size", type=int, default=500, help="character chunk size")
@@ -218,7 +218,7 @@ def main():
                        ("% cut mid-sentence", "pct_cut_mid_sentence"),
                        ("% mixing 2+ sections", "pct_mixing_sections")):
         print(f"{label:36}{c[key]:>12}{s[key]:>12}")
-    print("\nOpen data/comparison.html in your browser to see the side-by-side.")
+    print("\nOpen data/output/comparison.html in your browser to see the side-by-side.")
 
 
 if __name__ == "__main__":

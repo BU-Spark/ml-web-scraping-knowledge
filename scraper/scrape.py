@@ -1,10 +1,10 @@
 """Scrapes public web pages into clean, heading-based sections.
 
 Usage:
-    python3 scraper.py <url> [<url> ...]
-    python3 scraper.py urls.txt      (one URL per line; lines starting with # are ignored)
+    python3 -m scraper <url> [<url> ...]
+    python3 -m scraper data/urls/demo_seed.txt   (one URL per line; lines starting with # are ignored)
 
-Output: data/sections.json (every section from every page, in one file)
+Output: data/output/sections.json (every section from every page, in one file)
 
 Before fetching a page, the scraper checks the site's robots.txt and skips
 anything it disallows. If one page fails, the rest still run.
@@ -171,7 +171,7 @@ def main():
     urls = load_urls(sys.argv[1:])
     logger.info("INPUT: loaded %s URLs", len(urls))
     if not urls:
-        print("Usage: python3 scraper.py <url> [<url> ...]   or   python3 scraper.py urls.txt")
+        print("Usage: python3 -m scraper <url> [<url> ...]   or   python3 -m scraper data/urls/demo_seed.txt")
         sys.exit(1)
 
     all_sections = []
@@ -186,8 +186,8 @@ def main():
             logger.info("WAIT: pausing %s second(s)", DELAY_SECONDS)
             time.sleep(DELAY_SECONDS)
 
-    out_path = Path("data/sections.json")
-    out_path.parent.mkdir(exist_ok=True)
+    out_path = Path("data/output/sections.json")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(all_sections, indent=2, ensure_ascii=False))
     logger.info("SAVE: wrote %s sections from %s/%s pages to %s (%s bytes)",
                 len(all_sections), successful_pages, len(urls), out_path.resolve(), out_path.stat().st_size)

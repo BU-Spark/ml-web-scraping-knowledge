@@ -1,18 +1,18 @@
 """Character chunking: cut each section's text every N characters, ignoring meaning.
 
 Usage:
-    python3 chunk_characters.py [size] [overlap]
-    python3 chunk_characters.py 500 50
+    python3 -m chunking.character [size] [overlap]
+    python3 -m chunking.character 500 50
 
-Reads  data/sections.json         (output of scraper.py)
-Writes data/chunks_character.json (one record per chunk)
+Reads  data/output/sections.json         (output of the scraper)
+Writes data/output/chunks_character.json (one record per chunk)
 """
 import json
 import sys
 from pathlib import Path
 
-IN_PATH = Path("data/sections.json")
-OUT_PATH = Path("data/chunks_character.json")
+IN_PATH = Path("data/output/sections.json")
+OUT_PATH = Path("data/output/chunks_character.json")
 
 
 def chunk_characters(text, size=500, overlap=50):
@@ -71,7 +71,7 @@ def main():
 
     sections = json.loads(IN_PATH.read_text())
     chunks = chunk_sections(sections, size, overlap)
-    OUT_PATH.parent.mkdir(exist_ok=True)
+    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(chunks, indent=2, ensure_ascii=False))
     print(f"{len(sections)} sections (size={size}, overlap={overlap}) -> {summarize(chunks)}")
     print(f"wrote {OUT_PATH}")
