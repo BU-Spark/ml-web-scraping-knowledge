@@ -168,3 +168,22 @@ $RECYCLE.BIN/
 
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
+
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Secrets: never commit these (see .env.example)
+.env
+.env.*
+!.env.example
+
+# Pipeline run outputs (small reference copies live in data/samples/)
+data/output/
+
+# Internal Salesforce data must never be committed
+data/internal/

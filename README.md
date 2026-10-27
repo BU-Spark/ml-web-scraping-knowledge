@@ -3,11 +3,11 @@
   <br>
   <a href="https://www.bu.edu/spark/" target="_blank"><img src="https://www.bu.edu/spark/files/2023/08/logo.png" alt="BUSpark" width="200"></a>
   <br>
-  Project README Template <change to project name>
+  Salesforce Web-Scraping Knowledge MCP
   <br>
 </h1>
 
-<h4 align="center">A template for the project readme file. </h4> <change to repo short description>
+<h4 align="center">Scrape public sales content, turn it into cited knowledge units, and serve them to an AI agent through category-specific MCP tools.</h4>
 
 <p align="center">
   <a href="#key-features">Key Features</a> •
@@ -17,47 +17,61 @@
 </p>
 
 ## Key Features
-In this section you will be including a list of key features of your code/project.
 
-You should also include a short description of what each part of your code does. (Detailed description in the readme of each directory, if applicable)
-* /path/to/directory - function and description
-  - Key notes
-* /path/to/script - function and description
-  - Key notes
-* Lorem Ipsum - Dolor Sit Amet
-  - Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-* Duis Aute Irure Dolor
-  - Excepteur sint occaecat
-* Excepteur Sint Occaecat
-  - Curabitur efficitur, nunc non ultricies gravida, felis purus posuere eros, sed faucibus sapien est nec quam. Nulla at nisl nisl.
- 
+The repo has one folder per pipeline stage, so each owner can work in parallel.
+Folders marked *(planned)* do not exist yet.
+
+* `scraper/` - fetch public pages, check robots.txt first (Protego), strip clutter, group text under headings
+* `chunking/` - split sections into chunks
+  - `character.py` fixed-size baseline, `semantic.py` LangChain semantic chunker, `compare.py` side-by-side report
+* `extraction/` *(planned)* - Claude API turns chunks into labeled knowledge units with evidence
+* `embed/` *(planned)* - the one embedding model wrapper, shared by the pipeline AND the MCP server
+* `db/` *(planned)* - Postgres + pgvector schema (numbered SQL migrations) and upsert loader
+* `pipeline/` *(planned)* - SCC batch job scripts that chain the stages
+* `mcp_server/` *(planned)* - MCP server on Heroku: auth, shared retrieval, one tool per category
+  - may import only `embed/`, `common/` and `db/`, so it can be split into its own repo later
+* `eval/` *(planned)* - test questions, expected answers, scoring
+* `data/urls/` - URL lists (committed)
+* `data/samples/` - small reference outputs from the Oct 8 demo (committed)
+* `data/output/` - pipeline run outputs (gitignored)
+
+Internal Salesforce data is never committed. Secrets go in `.env` (see `.env.example`), never in git.
+
 ## How To Use
-
-To clone and run this application, you'll need <a href="https://git-scm.com" target="_blank">Git</a>
-From your command line:
 
 ```bash
 # Clone this repository
-$ git clone [repo link]
+$ git clone https://github.com/BU-Spark/ml-web-scraping-knowledge.git
+$ cd ml-web-scraping-knowledge
+$ python3 -m pip install -r requirements.txt
 
-# Further Instructions
-...
+# All commands run from the repo root.
+# 1. Scrape (writes data/output/sections.json)
+$ python3 -m scraper data/urls/demo_seed.txt
+
+# 2. Chunk (reads data/output/sections.json)
+$ python3 -m chunking.character 500 50
+$ python3 -m chunking.semantic 90 200
+$ python3 -m chunking.compare          # then open data/output/comparison.html
 ```
+
+To try chunking without scraping, copy `data/samples/sections.json` to `data/output/sections.json`.
+
+The code exactly as shown at the Oct 8 demo is preserved at the `oct8-demo` tag (`git checkout oct8-demo`).
+
+### Branches
 
 Create a new branch from dev, add changes on the new branch you just created.
 
-You will want to look into <a href="https://git-scm.com/docs/git-branch" target="_blank">git branch</a> and <a href="https://git-scm.com/docs/git-checkout" target="_blank">git checkout</a>
-
 ```bash
-# Create and Checkout a new branch if it doesn't exist
-$ git checkout -b your-branch main
-...
+$ git checkout dev && git pull
+$ git checkout -b your-branch dev
 ```
 
-Open a Pull Request to dev. Add your PM and TPM as reviewers. 
+Open a Pull Request to dev. Add your PM and TPM as reviewers.
 
 At the end of the semester during project wrap up open a final Pull Request to main from dev branch.
- 
+
 ## Project Description
 
 In this section, you should include the project description, either from the client or spark.
