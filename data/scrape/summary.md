@@ -1,13 +1,13 @@
 # Scrape summary
 
-261 of 388 manifest URLs attempted; 233 usable (`ok`).
+268 of 395 manifest URLs attempted; 239 usable (`ok`).
 
 ## Status by category
 
 | status | cat 1 | cat 2 | cat 10 | total |
 |---|---|---|---|---|
-| ok | 150 | 83 | 0 | 233 |
-| blocked_robots | 0 | 7 | 0 | 7 |
+| ok | 150 | 89 | 0 | 239 |
+| blocked_robots | 0 | 8 | 0 | 8 |
 | bot_challenge | 0 | 6 | 0 | 6 |
 | http_error | 0 | 2 | 0 | 2 |
 | non_html_skipped | 0 | 1 | 0 | 1 |
@@ -20,7 +20,7 @@
 
 **Category 1** (150 docs, 8 domains): forcemanagement.com 75, trailhead.salesforce.com 17, meddicc.com 15, huthwaiteinternational.com 13, salesforce.com 13, challengerinc.com 7, handbook.gitlab.com 7, blog.hubspot.com 3
 
-**Category 2** (83 docs, 38 domains): salesforce.com 16, handbook.gitlab.com 7, sec.gov 6, trailhead.salesforce.com 5, blog.hubspot.com 5, alexandergroup.com 5, gainsight.com 4, dock.us 3, insight.kellogg.northwestern.edu 2, leandata.com 2, apollo.io 1, bls.gov 1, presalescollective.com 1, techtarget.com 1, investors.yubico.com 1, blog.workday.com 1, single-market-economy.ec.europa.eu 1, middlemarketcenter.org 1, sba.gov 1, viola-group.com 1, cloud.substack.com 1, pipeline.zoominfo.com 1, revengine.substack.com 1, saascmopro.substack.com 1, theleapadvisor.substack.com 1, saastr.com 1, yesware.com 1, go.forrester.com 1, bain.com 1, customersuccesscollective.com 1, fticonsulting.com 1, news.darden.virginia.edu 1, resources.rework.com 1, revopscoop.substack.com 1, gong.io 1, churnzero.com 1, blog.bridgegroupinc.com 1, revopsinflection.substack.com 1
+**Category 2** (89 docs, 40 domains): salesforce.com 16, handbook.gitlab.com 7, sec.gov 6, trailhead.salesforce.com 5, blog.hubspot.com 5, alexandergroup.com 5, gainsight.com 4, cloud.substack.com 3, dock.us 3, claude.com 3, insight.kellogg.northwestern.edu 2, leandata.com 2, apollo.io 1, bls.gov 1, presalescollective.com 1, techtarget.com 1, investors.yubico.com 1, blog.workday.com 1, single-market-economy.ec.europa.eu 1, middlemarketcenter.org 1, sba.gov 1, viola-group.com 1, pipeline.zoominfo.com 1, revengine.substack.com 1, saascmopro.substack.com 1, theleapadvisor.substack.com 1, saastr.com 1, yesware.com 1, go.forrester.com 1, bain.com 1, customersuccesscollective.com 1, fticonsulting.com 1, news.darden.virginia.edu 1, resources.rework.com 1, revopscoop.substack.com 1, gong.io 1, churnzero.com 1, blog.bridgegroupinc.com 1, revopsinflection.substack.com 1, openai.com 1
 
 ## Top failing domains
 
@@ -45,6 +45,7 @@
 | salesforceben.com | 1 | blocked_robots: disallowed by robots.txt (x1) |
 | dspace.lib.cranfield.ac.uk | 1 | bot_challenge: HTTP 403; bot challenge page ('attention required! | cloudflare') (x1) |
 | leandata.com | 1 | http_error: HTTP 404 (x1) |
+| venturebeat.com | 1 | blocked_robots: robots.txt unreachable: timeout (x1) |
 
 ## Word counts (ok docs)
 
@@ -52,13 +53,13 @@ min 152, median 870, max 13005
 
 | words | docs |
 |---|---|
-| <500 | 57 |
-| 500-1999 | 142 |
-| 2000-4999 | 28 |
+| <500 | 58 |
+| 500-1999 | 146 |
+| 2000-4999 | 29 |
 | 5000+ | 6 |
 
 ## Domains whose terms of service haven't been reviewed
 
 A human should check these and mark them `tos_reviewed: true` or `skip: true` in `scraper/domains.yaml`.
 
-alexandergroup.com, apollo.io, bain.com, blog.bridgegroupinc.com, blog.hubspot.com, blog.workday.com, blogs.partner.microsoft.com, bls.gov, census.gov, challengerinc.com, churnzero.com, cloud.substack.com, cms.implementconsultinggroup.com, customersuccesscollective.com, dock.us, dspace.lib.cranfield.ac.uk, fedsmallbusiness.org, forcemanagement.com, fticonsulting.com, gainsight.com, gartner.com, go.forrester.com, gong.io, gtmnow.com, handbook.gitlab.com, huthwaiteinternational.com, insight.kellogg.northwestern.edu, investors.yubico.com, kylewill.medium.com, langfuse.com, leandata.com, mckinsey.com, meddicc.com, media-publications.bcg.com, middlemarketcenter.org, news.darden.virginia.edu, pipeline.zoominfo.com, posthog.com, presalescollective.com, resources.rework.com, revengine.substack.com, revopscoop.substack.com, revopsinflection.substack.com, saascmopro.substack.com, saastr.com, salesforce.com, salesforceben.com, sba.gov, sec.gov, single-market-economy.ec.europa.eu, strategyand.pwc.com, techtarget.com, theleapadvisor.substack.com, trailhead.salesforce.com, viola-group.com, yesware.com
+alexandergroup.com, apollo.io, bain.com, blog.bridgegroupinc.com, blog.hubspot.com, blog.workday.com, blogs.partner.microsoft.com, bls.gov, census.gov, challengerinc.com, churnzero.com, claude.com, cloud.substack.com, cms.implementconsultinggroup.com, customersuccesscollective.com, dock.us, dspace.lib.cranfield.ac.uk, fedsmallbusiness.org, forcemanagement.com, fticonsulting.com, gainsight.com, gartner.com, go.forrester.com, gong.io, gtmnow.com, handbook.gitlab.com, huthwaiteinternational.com, insight.kellogg.northwestern.edu, investors.yubico.com, kylewill.medium.com, langfuse.com, leandata.com, mckinsey.com, meddicc.com, media-publications.bcg.com, middlemarketcenter.org, news.darden.virginia.edu, openai.com, pipeline.zoominfo.com, posthog.com, presalescollective.com, resources.rework.com, revengine.substack.com, revopscoop.substack.com, revopsinflection.substack.com, saascmopro.substack.com, saastr.com, salesforce.com, salesforceben.com, sba.gov, sec.gov, single-market-economy.ec.europa.eu, strategyand.pwc.com, techtarget.com, theleapadvisor.substack.com, trailhead.salesforce.com, venturebeat.com, viola-group.com, yesware.com

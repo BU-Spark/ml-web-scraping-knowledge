@@ -28,7 +28,7 @@ SECTIONS_EXPORT = Path("data/output/sections.json")  # old flat format the chunk
 
 # ---- Categories (numbers from the client's list) ----
 CATEGORY_NAMES = {1: "sales_methodology", 2: "segmentation_territory", 10: "enablement_operations"}
-EXPECTED_COUNTS = {1: 155, 2: 106, 10: 127}
+EXPECTED_COUNTS = {1: 155, 2: 113, 10: 127}  # cat 2: +7 competitor GTM links (Nov 3)
 
 
 # ---- Identity ----

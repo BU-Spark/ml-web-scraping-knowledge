@@ -178,7 +178,7 @@ https://blog.hubspot.com/sales/banter-sales-qualification-framework
 https://blog.hubspot.com/sales/gpct-sales-qualification
 
 # Knowledge category 2: Segmentation and territory (SMB, Commercial, Enterprise)
-# Total URLs: 106
+# Total URLs: 113
 #
 # Salesforce public guidance: 10-K description of how Salesforce sells, current and historical posted segment bands, SMB sales guide, enterprise sales, field vs inside sales, channel sales, territories and sales plans, capacity planning, lead management, sales roles (SDR/BDA/BDR/SE/AE), Trailhead modules on territory planning and account-based selling (25)
 https://trailhead.salesforce.com/content/learn/modules/account-based-selling/explore-and-create-account-plans
@@ -305,6 +305,17 @@ https://www.leandata.com/blog/resources/routing/
 https://blog.bridgegroupinc.com/2024-ae-metrics-compensation-benchmark
 https://revopsinflection.substack.com/p/sales-capacity-modeling-a-key-to
 https://www.alexandergroup.com/insights/how-many-account-managers-does-your-team-need/
+#
+# Competitor go-to-market: Anthropic pricing tiers, self-serve to enterprise motion, startup program, sales org - competitor practices, not Salesforce practices (4)
+https://claude.com/pricing
+https://claude.com/blog/self-serve-enterprise
+https://claude.com/programs/startups
+https://cloud.substack.com/p/how-anthropic-rebuilt-its-sales-org
+#
+# Competitor go-to-market: OpenAI team vs enterprise tiers and enterprise sales motion - competitor practices, not Salesforce practices (3)
+https://openai.com/index/introducing-chatgpt-team/
+https://cloud.substack.com/p/how-we-built-chatgpt-enterprises
+https://venturebeat.com/ai/openai-sales-leader-says-we-see-ourselves-as-agi-sherpas
 #
 # Shared with category 1 (already in the sales methodology file - listed as comments so they are not scraped twice; tag them for this category too)
 # Both links are listed under Knowledge category 1 above; their segmentation tags are noted there.

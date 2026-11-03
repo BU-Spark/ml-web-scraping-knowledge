@@ -53,7 +53,7 @@ def cmd_parse(args):
     if problems:
         print("COUNT CHECK FAILED:\n  " + "\n  ".join(problems))
         sys.exit(1)
-    print("Count check OK (155 / 106 / 127).")
+    print("Count check OK (" + " / ".join(str(n) for n in config.EXPECTED_COUNTS.values()) + ").")
 
 
 def cmd_probe(args):
