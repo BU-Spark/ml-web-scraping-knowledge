@@ -14,7 +14,7 @@ from itertools import zip_longest
 
 from bs4 import UnicodeDammit
 
-from scraper import clean, config, extract, fetch, quality
+from scraper import clean, config, extract, fetch, quality, sec
 from scraper.links import normalize_url
 
 
@@ -151,6 +151,8 @@ def _process(m, row, policy, fetcher, dupes, refetch):
     # 4. Extract + clean
     meta, sections, extractor = extract.extract(html, result.final_url or url, domain)
     sections, clean_stats = clean.clean_sections(sections)
+    if domain == "sec.gov":  # filings are huge; keep only the business description
+        sections, clean_stats["sec"] = sec.business_sections(sections)
     title = clean.normalize(meta["title"]) if meta["title"] else None
     text = clean.sections_to_text(title, sections)
     body_words = sum(quality.word_count(s["text"]) for s in sections)

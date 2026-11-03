@@ -1,25 +1,25 @@
 # Scrape summary
 
-73 of 388 manifest URLs attempted; 56 usable (`ok`).
+77 of 388 manifest URLs attempted; 60 usable (`ok`).
 
 ## Status by category
 
 | status | cat 1 | cat 2 | cat 10 | total |
 |---|---|---|---|---|
-| ok | 16 | 40 | 0 | 56 |
+| ok | 16 | 44 | 0 | 60 |
 | blocked_robots | 0 | 6 | 0 | 6 |
 | bot_challenge | 0 | 6 | 0 | 6 |
 | http_error | 0 | 1 | 0 | 1 |
 | non_html_skipped | 0 | 1 | 0 | 1 |
 | paywall_or_login | 0 | 1 | 0 | 1 |
 | too_short | 0 | 2 | 0 | 2 |
-| _not attempted_ | 139 | 49 | 127 | 315 |
+| _not attempted_ | 139 | 45 | 127 | 311 |
 
 ## Usable docs per domain
 
 **Category 1** (16 docs, 8 domains): challengerinc.com 2, meddicc.com 2, trailhead.salesforce.com 2, forcemanagement.com 2, huthwaiteinternational.com 2, salesforce.com 2, handbook.gitlab.com 2, blog.hubspot.com 2
 
-**Category 2** (40 docs, 34 domains): sec.gov 2, dock.us 2, alexandergroup.com 2, insight.kellogg.northwestern.edu 2, gainsight.com 2, leandata.com 2, apollo.io 1, bls.gov 1, presalescollective.com 1, techtarget.com 1, investors.yubico.com 1, blog.workday.com 1, single-market-economy.ec.europa.eu 1, middlemarketcenter.org 1, sba.gov 1, viola-group.com 1, cloud.substack.com 1, pipeline.zoominfo.com 1, revengine.substack.com 1, saascmopro.substack.com 1, theleapadvisor.substack.com 1, saastr.com 1, yesware.com 1, go.forrester.com 1, bain.com 1, customersuccesscollective.com 1, fticonsulting.com 1, news.darden.virginia.edu 1, resources.rework.com 1, revopscoop.substack.com 1, gong.io 1, churnzero.com 1, blog.bridgegroupinc.com 1, revopsinflection.substack.com 1
+**Category 2** (44 docs, 34 domains): sec.gov 6, dock.us 2, alexandergroup.com 2, insight.kellogg.northwestern.edu 2, gainsight.com 2, leandata.com 2, apollo.io 1, bls.gov 1, presalescollective.com 1, techtarget.com 1, investors.yubico.com 1, blog.workday.com 1, single-market-economy.ec.europa.eu 1, middlemarketcenter.org 1, sba.gov 1, viola-group.com 1, cloud.substack.com 1, pipeline.zoominfo.com 1, revengine.substack.com 1, saascmopro.substack.com 1, theleapadvisor.substack.com 1, saastr.com 1, yesware.com 1, go.forrester.com 1, bain.com 1, customersuccesscollective.com 1, fticonsulting.com 1, news.darden.virginia.edu 1, resources.rework.com 1, revopscoop.substack.com 1, gong.io 1, churnzero.com 1, blog.bridgegroupinc.com 1, revopsinflection.substack.com 1
 
 ## Top failing domains
 
@@ -43,14 +43,14 @@
 
 ## Word counts (ok docs)
 
-min 258, median 951, max 124008
+min 258, median 1087, max 13005
 
 | words | docs |
 |---|---|
 | <500 | 11 |
 | 500-1999 | 32 |
 | 2000-4999 | 11 |
-| 5000+ | 2 |
+| 5000+ | 6 |
 
 ## Domains whose terms of service haven't been reviewed
 

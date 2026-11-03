@@ -140,7 +140,8 @@ SCC batch jobs (BU Shared Computing Cluster)            Heroku (app: bu-research
   The exact demo code is preserved at git tag **`oct8-demo`**; the `Demo` branch is frozen.
 - **Public URL lists (Oct 21-22):** links were gathered with AI assistants and compiled into
   `public_urls_compiled.txt` (deduplicated, category labels and comments kept) plus
-  `sources_by_category.txt`. **Not in the repo yet; they belong in `data/urls/`.** 388 links total:
+  `sources_by_category.txt`. `data/urls/public_urls_compiled.txt` is committed (Nov 3); the
+  per-category file is not. 388 links total:
   - Cat 1 sales methodology: 155 links from 8 domains, heavily concentrated
     (forcemanagement.com 80, trailhead 17, meddicc.com 15, huthwaiteinternational.com 13,
     salesforce.com 13, challengerinc.com 7, handbook.gitlab.com 7, blog.hubspot.com 3).
@@ -150,8 +151,13 @@ SCC batch jobs (BU Shared Computing Cluster)            Heroku (app: bu-research
     8 each; forrester 6; mckinsey 5; chieflearningofficer 5; ...).
   - Note: some of these (Gartner, Forrester, SEC filings) may be paywalled, PDFs or poor scraping
     targets; check before relying on them.
+- **Production scraper (Nov 3, `feature/scraper`):** `python3 -m scraper parse|probe|run|report|show|
+  export-sections`; see `scraper/README.md`. Page text goes to `$SCRAPER_OUT` (gitignored; SCC project
+  space), manifest and reports to `data/scrape/`. UA contact comes from `SCRAPER_CONTACT` in `.env`.
+  PDFs skipped for the MVP; sec.gov filings trimmed to the business item. Pilot (cat 1-2, 2 URLs per
+  domain): 56/73 usable. Blocked/bot-challenged sites are logged and skipped, never worked around.
 - A 46-item backlog and week-by-week plan exist in a shared plan doc (not in this repo).
-- Not yet built: extraction prompt, DB schema, SCC pipeline script, MCP server, evaluation set,
+- Not yet built: extraction prompt, DB schema, full SCC pipeline (only `pipeline/scc/scrape.sh`), MCP server, evaluation set,
   shared record shapes (`common/records.py`), shared embedding wrapper (`embed/model.py`).
 
 ## 6. Rules and constraints (follow these)
@@ -207,7 +213,9 @@ Run everything from the repo root with `python3 -m <package>` (see README). Fold
 (planned) don't exist yet; create them when the stage is started.
 
 ```
-scraper/        fetch, robots check, clean (scrape.py); source registry (planned)
+scraper/        links/policy/fetch/extract/clean/quality/registry modules; domains.yaml; README.md
+tests/          offline pytest suites (tests/scraper/)
+data/scrape/    scraper manifest + reports (committed; no page text)
 chunking/       character.py baseline, semantic.py, compare.py + utils.py
 common/         (planned) config.py for env vars, records.py = Section/Chunk/Unit contracts
 extraction/     (planned) Claude prompt + unit schema + validation

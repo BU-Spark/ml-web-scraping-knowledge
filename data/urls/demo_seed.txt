@@ -1,4 +1,0 @@
-# One URL per line
-# Run with:  python3 scraper.py urls.txt
-
-https://www.salesforce.com/eu/blog/sales-process-beginners-guide/

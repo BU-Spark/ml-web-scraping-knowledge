@@ -131,3 +131,16 @@ def test_teasers_and_tab_navigation_are_dropped():
     assert [s["heading"] for s in out] == ["How to negotiate", "Create a plan"]
     assert out[0]["text"] == "Real body text about negotiation."
     assert stats["teaser_sections"] == 1 and stats["nav_lines"] == 1
+
+
+def test_sec_keeps_business_item_and_recovers_headings():
+    from scraper import sec
+    text = "\n".join(["Item 1. | |", "Item 1A. | |",                       # table of contents
+                      "ITEM 1. BUSINESS", "Overview", "We sell software to companies of all sizes.",
+                      "Sales and Marketing", "We sell primarily through our direct sales force.",
+                      "•partner co-marketing activities;",
+                      "ITEM 1A. RISK FACTORS", "Risks", "Many risks exist."])
+    out, note = sec.business_sections([{"heading": None, "level": 0, "text": text}])
+    assert [s["heading"] for s in out] == ["Overview", "Sales and Marketing"]
+    assert out[1]["text"].endswith("- partner co-marketing activities;")
+    assert "Many risks" not in str(out) and "kept Item 1. Business" in note
