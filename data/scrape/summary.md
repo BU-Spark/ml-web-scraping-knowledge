@@ -1,31 +1,34 @@
 # Scrape summary
 
-77 of 388 manifest URLs attempted; 60 usable (`ok`).
+261 of 388 manifest URLs attempted; 233 usable (`ok`).
 
 ## Status by category
 
 | status | cat 1 | cat 2 | cat 10 | total |
 |---|---|---|---|---|
-| ok | 16 | 44 | 0 | 60 |
-| blocked_robots | 0 | 6 | 0 | 6 |
+| ok | 150 | 83 | 0 | 233 |
+| blocked_robots | 0 | 7 | 0 | 7 |
 | bot_challenge | 0 | 6 | 0 | 6 |
-| http_error | 0 | 1 | 0 | 1 |
+| http_error | 0 | 2 | 0 | 2 |
 | non_html_skipped | 0 | 1 | 0 | 1 |
 | paywall_or_login | 0 | 1 | 0 | 1 |
-| too_short | 0 | 2 | 0 | 2 |
-| _not attempted_ | 139 | 45 | 127 | 311 |
+| redirected_away | 1 | 2 | 0 | 3 |
+| too_short | 4 | 4 | 0 | 8 |
+| _not attempted_ | 0 | 0 | 127 | 127 |
 
 ## Usable docs per domain
 
-**Category 1** (16 docs, 8 domains): challengerinc.com 2, meddicc.com 2, trailhead.salesforce.com 2, forcemanagement.com 2, huthwaiteinternational.com 2, salesforce.com 2, handbook.gitlab.com 2, blog.hubspot.com 2
+**Category 1** (150 docs, 8 domains): forcemanagement.com 75, trailhead.salesforce.com 17, meddicc.com 15, huthwaiteinternational.com 13, salesforce.com 13, challengerinc.com 7, handbook.gitlab.com 7, blog.hubspot.com 3
 
-**Category 2** (44 docs, 34 domains): sec.gov 6, dock.us 2, alexandergroup.com 2, insight.kellogg.northwestern.edu 2, gainsight.com 2, leandata.com 2, apollo.io 1, bls.gov 1, presalescollective.com 1, techtarget.com 1, investors.yubico.com 1, blog.workday.com 1, single-market-economy.ec.europa.eu 1, middlemarketcenter.org 1, sba.gov 1, viola-group.com 1, cloud.substack.com 1, pipeline.zoominfo.com 1, revengine.substack.com 1, saascmopro.substack.com 1, theleapadvisor.substack.com 1, saastr.com 1, yesware.com 1, go.forrester.com 1, bain.com 1, customersuccesscollective.com 1, fticonsulting.com 1, news.darden.virginia.edu 1, resources.rework.com 1, revopscoop.substack.com 1, gong.io 1, churnzero.com 1, blog.bridgegroupinc.com 1, revopsinflection.substack.com 1
+**Category 2** (83 docs, 38 domains): salesforce.com 16, handbook.gitlab.com 7, sec.gov 6, trailhead.salesforce.com 5, blog.hubspot.com 5, alexandergroup.com 5, gainsight.com 4, dock.us 3, insight.kellogg.northwestern.edu 2, leandata.com 2, apollo.io 1, bls.gov 1, presalescollective.com 1, techtarget.com 1, investors.yubico.com 1, blog.workday.com 1, single-market-economy.ec.europa.eu 1, middlemarketcenter.org 1, sba.gov 1, viola-group.com 1, cloud.substack.com 1, pipeline.zoominfo.com 1, revengine.substack.com 1, saascmopro.substack.com 1, theleapadvisor.substack.com 1, saastr.com 1, yesware.com 1, go.forrester.com 1, bain.com 1, customersuccesscollective.com 1, fticonsulting.com 1, news.darden.virginia.edu 1, resources.rework.com 1, revopscoop.substack.com 1, gong.io 1, churnzero.com 1, blog.bridgegroupinc.com 1, revopsinflection.substack.com 1
 
 ## Top failing domains
 
 | domain | failures | reasons |
 |---|---|---|
-| mckinsey.com | 2 | blocked_robots: robots.txt unreachable: timeout (x2) |
+| forcemanagement.com | 5 | too_short: 103 words < 150 (x1); redirected_away: redirected to generic page https://www.ascender.co/ (x1); too_short: 135 words < 150 (x1) |
+| salesforce.com | 3 | redirected_away: redirected to generic page https://www.salesforce.com/resources/?bc=DB (x1); redirected_away: redirected to generic page https://www.salesforce.com/in/resources/?bc=DB (x1); too_short: 142 words < 150 (x1) |
+| mckinsey.com | 3 | blocked_robots: robots.txt unreachable: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')) (x3) |
 | gtmnow.com | 2 | bot_challenge: HTTP 403; bot challenge page ('just a moment...') (x2) |
 | blogs.partner.microsoft.com | 1 | blocked_robots: robots.txt unreachable: SSLError: HTTPSConnectionPool(host='blogs.partner.microsoft.com', port=443): Max retries exceeded with url: /robots.txt (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)'))) (x1) |
 | blog.bridgegroupinc.com | 1 | paywall_or_login: login form with only 182 words (x1) |
@@ -37,19 +40,21 @@
 | gartner.com | 1 | bot_challenge: HTTP 403; bot challenge page ('just a moment...') (x1) |
 | cms.implementconsultinggroup.com | 1 | http_error: HTTP 404 (x1) |
 | media-publications.bcg.com | 1 | non_html_skipped: PDF (skipped for MVP) (x1) |
+| alexandergroup.com | 1 | too_short: 135 words < 150 (x1) |
 | strategyand.pwc.com | 1 | bot_challenge: HTTP 403; bot challenge page ('access denied') (x1) |
 | salesforceben.com | 1 | blocked_robots: disallowed by robots.txt (x1) |
 | dspace.lib.cranfield.ac.uk | 1 | bot_challenge: HTTP 403; bot challenge page ('attention required! | cloudflare') (x1) |
+| leandata.com | 1 | http_error: HTTP 404 (x1) |
 
 ## Word counts (ok docs)
 
-min 258, median 1087, max 13005
+min 152, median 870, max 13005
 
 | words | docs |
 |---|---|
-| <500 | 11 |
-| 500-1999 | 32 |
-| 2000-4999 | 11 |
+| <500 | 57 |
+| 500-1999 | 142 |
+| 2000-4999 | 28 |
 | 5000+ | 6 |
 
 ## Domains whose terms of service haven't been reviewed
