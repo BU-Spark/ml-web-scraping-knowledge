@@ -46,8 +46,10 @@ $ cd ml-web-scraping-knowledge
 $ python3 -m pip install -r requirements.txt
 
 # All commands run from the repo root.
-# 1. Scrape (writes data/output/sections.json)
-$ python3 -m scraper data/urls/demo_seed.txt
+# 1. Scrape (see scraper/README.md; needs SCRAPER_CONTACT in .env)
+$ python3 -m scraper parse
+$ python3 -m scraper run --category 1,2
+$ python3 -m scraper export-sections   # writes data/output/sections.json for chunking
 
 # 2. Chunk (reads data/output/sections.json)
 $ python3 -m chunking.character 500 50
