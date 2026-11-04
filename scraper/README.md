@@ -98,3 +98,39 @@ After changing them, `run --force` re-processes from the raw cache without re-hi
 Honest User-Agent with a contact address; robots.txt checked with Protego (including rules for our
 bot name and Crawl-delay); one request at a time per host, 3 s apart by default; retries only for
 429/5xx with backoff and `Retry-After`; no cookies, no logins, no working around paywalls or blocks.
+
+## Internal documents (`ingest-internal`)
+
+Internal knowledge arrives as markdown `.txt` files. They are not scraped; this command turns them
+into the same clean-doc format, marked `visibility: "internal"`, so chunking and extraction treat
+them like any other doc and access control can filter them later.
+
+**Do not put real internal files anywhere until the team has written confirmation from the client.**
+Build and demo with the synthetic sample instead.
+
+```bash
+# Synthetic sample (committed, invented data)
+python3 -m scraper ingest-internal --dir data/samples/synthetic_internal
+
+# Real files: a folder git can't see
+INTERNAL_DIR=/projectnb/<project>/internal INTERNAL_OUT=/projectnb/<project>/internal_out \
+  python3 -m scraper ingest-internal
+```
+
+Input folder: `*.txt` (markdown `#` headings) plus `metadata.csv` with columns
+`file,title,category,sensitivity,owner,doc_date,notes`. `category` is 1, 2 or 10; `sensitivity`
+is `internal` or `confidential`. A file without a metadata row is flagged (`missing_metadata`),
+never guessed.
+
+Output: `$INTERNAL_OUT/clean/<doc_id>.json` and `$INTERNAL_OUT/registry.jsonl`, kept apart from
+public docs. Clean docs have `url: null`, `source_file`, `visibility`, `sensitivity`, and
+`publisher: "Salesforce (internal)"`. Statuses: `ok`, `missing_metadata`, `bad_metadata`,
+`bad_encoding`, `too_short` (< 20 words), `duplicate_content`.
+
+Safety built in:
+- Refuses to run if the input or output folder is inside the repo and not gitignored
+  (defaults `data/internal/` and `data/output/internal/` are both gitignored).
+- Logs file names, ids and counts only, never document text.
+- Web clutter rules are off, so lines like "Contact sales ops" are kept.
+- `doc_id` comes from the file name, so editing a file updates its doc; removing a file removes
+  its clean doc on the next run.

@@ -1,0 +1,22 @@
+# SYNTHETIC Deal inspection cadence
+
+> SYNTHETIC SAMPLE. Invented for testing. Not real Salesforce data.
+
+## Weekly forecast call
+
+Every Monday, first-line managers review all opportunities expected to close this quarter. Reps update the next step, close date and qualification fields before the call.
+
+## Qualification criteria by stage
+
+- Stage 2: a pain is confirmed and an economic buyer is identified.
+- Stage 3: decision criteria and decision process are documented.
+- Stage 4: a mutual close plan is agreed with the champion.
+
+```
+Example close-plan line (code blocks are kept as-is):
+# this hash is not a heading
+```
+
+## Quarterly business review
+
+At the end of each quarter, managers compare forecast accuracy against actual bookings and pick two deals to review in depth with the team.

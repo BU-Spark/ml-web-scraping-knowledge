@@ -30,12 +30,15 @@ def is_teaser(text):
     return "\n" not in text and len(text) < 400 and text.rstrip().endswith(("...", "\u2026"))
 
 
-def clean_sections(sections):
-    """Returns (cleaned sections, stats dict). Sections left with no text are dropped."""
+def clean_sections(sections, web=True):
+    """Returns (cleaned sections, stats dict). Sections left with no text are dropped.
+
+    web=False (internal documents) only normalizes text and drops repeated lines: the
+    web clutter rules (CTAs, teasers, tab navigation) would remove real content there."""
     stats = Counter()
     norm = []
     for s in sections:
-        if is_boilerplate_heading(s["heading"]):
+        if web and is_boilerplate_heading(s["heading"]):
             stats["boilerplate_sections"] += 1
             continue
         lines = [normalize(ln) for ln in s["text"].split("\n")]
@@ -50,10 +53,10 @@ def clean_sections(sections):
     for s in norm:
         kept = []
         for ln in s["lines"]:
-            if is_boilerplate_line(ln):
+            if web and is_boilerplate_line(ln):
                 stats["boilerplate_lines"] += 1
                 continue
-            if ln.startswith("- ") and ln[2:].lower() in headings:
+            if web and ln.startswith("- ") and ln[2:].lower() in headings:
                 stats["nav_lines"] += 1
                 continue
             if counts[ln] > config.MAX_REPEATS and ln in seen:
@@ -61,7 +64,7 @@ def clean_sections(sections):
                 continue
             seen.add(ln)
             kept.append(ln)
-        if kept and is_teaser("\n".join(kept)) and s["heading"]:
+        if web and kept and is_teaser("\n".join(kept)) and s["heading"]:
             stats["teaser_sections"] += 1
             continue
         if kept:

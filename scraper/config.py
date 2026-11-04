@@ -26,6 +26,14 @@ REGISTRY = OUT_DIR / "registry.jsonl"
 LOG_DIR = OUT_DIR / "logs"
 SECTIONS_EXPORT = Path("data/output/sections.json")  # old flat format the chunker reads
 
+# Internal (non-public) documents: markdown .txt files + metadata.csv. Never in git: the input
+# defaults to data/internal/ (gitignored) and output to data/output/internal/ (gitignored).
+# On SCC point these at a project-space folder only the team can read.
+INTERNAL_DIR = Path(os.environ.get("INTERNAL_DIR", "data/internal"))
+INTERNAL_OUT = Path(os.environ.get("INTERNAL_OUT", "data/output/internal"))
+INTERNAL_MIN_WORDS = 20                # internal policies can be short; only near-empty files fail
+INTERNAL_SENSITIVITY = ("internal", "confidential")
+
 # ---- Categories (numbers from the client's list) ----
 CATEGORY_NAMES = {1: "sales_methodology", 2: "segmentation_territory", 10: "enablement_operations"}
 EXPECTED_COUNTS = {1: 155, 2: 130, 10: 127}  # cat 2 (Nov 3): +7 competitor GTM links, +17 replacements

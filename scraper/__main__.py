@@ -7,6 +7,7 @@
   python3 -m scraper report                                               # rebuild CSV + summary.md
   python3 -m scraper show    <doc_id|url>                                 # print one clean doc
   python3 -m scraper export-sections                                      # clean docs -> data/output/sections.json
+  python3 -m scraper ingest-internal [--dir D] [--out O]                   # internal .txt -> clean docs (never in git)
 """
 import argparse
 import json
@@ -170,6 +171,11 @@ def cmd_export_sections(args):
     print(f"Wrote {len(out)} sections to {config.SECTIONS_EXPORT}")
 
 
+def cmd_ingest_internal(args):
+    from scraper import internal
+    internal.ingest(args.dir, args.out)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="python3 -m scraper", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -200,6 +206,11 @@ def main(argv=None):
     s = sub.add_parser("export-sections", help="clean docs -> flat sections.json for chunking/")
     s.add_argument("--category")
     s.set_defaults(func=cmd_export_sections)
+
+    s = sub.add_parser("ingest-internal", help="internal markdown .txt files -> clean docs (visibility: internal)")
+    s.add_argument("--dir", help="input folder (default $INTERNAL_DIR or data/internal)")
+    s.add_argument("--out", help="output folder (default $INTERNAL_OUT or data/output/internal)")
+    s.set_defaults(func=cmd_ingest_internal)
 
     args = p.parse_args(argv)
     args.func(args)
