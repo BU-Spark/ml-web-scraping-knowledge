@@ -12,7 +12,14 @@ below). Do not invent seller experiences, performance gains, or context.
   validate, deduplicate, embed, upload. No retrieval server runs on SCC.
 - prompts/ holds LLM prompt text; schemas/ will define record contracts.
 - database/ will contain Postgres/pgvector schema, connections, and queries.
-- mcp_server/ will serve authenticated retrieval on Heroku to Salesforce agents.
+- mcp_server/ will serve retrieval on Heroku to Salesforce agents. It may import only embed/,
+  database/ and schemas/, never data_pipeline/, so it can be split off or handed over later.
+  Access control (auth) is not built yet: pending the client's answer on how user identity/role
+  is supplied. Do not return internal units from any tool until that is designed.
+- embed/ is the shared embedding interface used by BOTH data_pipeline/embedder.py and
+  mcp_server/ (same model for stored units and questions). Model choice pending (EMBED_MODEL).
+- eval/ (planned): demo questions and scoring. docs/: required write-ups (extraction
+  methodology, MCP tool schema; outlines so far).
 - deployment/ contains explicitly non-deployable scaffolding and notes.
 - data_pipeline/scraper/ is the scraper (package): link file -> robots/ToS check -> polite
   fetch (cached) -> trafilatura extraction with headings -> clean -> quality gates -> one clean

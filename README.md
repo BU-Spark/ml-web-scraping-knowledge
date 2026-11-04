@@ -25,6 +25,10 @@ sales-knowledge-project/
 │   ├── uploader.py
 │   └── run_pipeline.py
 │
+├── embed/                  # shared embedding interface (pipeline AND MCP server)
+│   ├── __init__.py
+│   └── model.py
+│
 ├── prompts/
 │   ├── extraction_prompt.txt
 │   ├── validation_prompt.txt
@@ -51,6 +55,12 @@ sales-knowledge-project/
 │   ├── test_extraction.py
 │   ├── test_database.py
 │   └── test_mcp_tools.py
+│
+├── eval/                   # planned: demo questions and scoring
+│   ├── README.md
+│   └── run_eval.py
+│
+├── docs/                   # extraction methodology, MCP tool schema (outlines)
 │
 └── deployment/
     ├── Procfile
