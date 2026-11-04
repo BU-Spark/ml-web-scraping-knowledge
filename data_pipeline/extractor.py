@@ -244,6 +244,9 @@ def enrich_unit(raw_unit, chunk, unit_index, extracted_at=None):
     section_id = chunk.get("section_index", chunk.get("section_id", 0))
     char_start = chunk.get("start", chunk.get("char_start"))
     char_end = chunk.get("end", chunk.get("char_end"))
+    visibility = chunk.get("visibility", "public")
+    source_type = "internal" if visibility == "internal" else "external"
+    sensitivity = chunk.get("sensitivity") or ("confidential" if source_type == "internal" else "public")
 
     outcome_raw = raw_unit.get("outcome")
     outcome = (
@@ -279,8 +282,8 @@ def enrich_unit(raw_unit, chunk, unit_index, extracted_at=None):
         "heading": chunk.get("heading", ""),
         "char_start": char_start,
         "char_end": char_end,
-        "source_type": "external",
-        "sensitivity": "public",
+        "source_type": source_type,
+        "sensitivity": sensitivity,
         "source_tier": infer_source_tier(domain),
         "extracted_at": extracted_at or date.today().isoformat(),
         "embed_text": "",
