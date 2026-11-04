@@ -13,3 +13,5 @@ sentence-transformers==6.2.0
 
 # Tests
 pytest
+anthropic
+jsonschema
