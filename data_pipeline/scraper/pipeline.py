@@ -14,8 +14,8 @@ from itertools import zip_longest
 
 from bs4 import UnicodeDammit
 
-from scraper import clean, config, extract, fetch, quality, sec
-from scraper.links import normalize_url
+from data_pipeline.scraper import clean, config, extract, fetch, quality, sec
+from data_pipeline.scraper.links import normalize_url
 
 
 def order_round_robin(rows):

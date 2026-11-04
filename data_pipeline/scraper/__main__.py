@@ -1,13 +1,13 @@
 """Scraper CLI. Run from the repo root:
 
-  python3 -m scraper parse   [--links data/urls/public_urls_compiled.txt]   # link file -> manifest + counts
-  python3 -m scraper probe   [--category 1,2] [--domain x.com]            # robots + HEAD only, no bodies
-  python3 -m scraper run     [--category 1,2] [--domain x.com] [--limit N] [--sample-per-domain K]
+  python3 -m data_pipeline.scraper parse   [--links data/urls/public_urls_compiled.txt]   # link file -> manifest + counts
+  python3 -m data_pipeline.scraper probe   [--category 1,2] [--domain x.com]            # robots + HEAD only, no bodies
+  python3 -m data_pipeline.scraper run     [--category 1,2] [--domain x.com] [--limit N] [--sample-per-domain K]
                              [--refetch] [--force]
-  python3 -m scraper report                                               # rebuild CSV + summary.md
-  python3 -m scraper show    <doc_id|url>                                 # print one clean doc
-  python3 -m scraper export-sections                                      # clean docs -> data/output/sections.json
-  python3 -m scraper ingest-internal [--dir D] [--out O]                   # internal .txt -> clean docs (never in git)
+  python3 -m data_pipeline.scraper report                                               # rebuild CSV + summary.md
+  python3 -m data_pipeline.scraper show    <doc_id|url>                                 # print one clean doc
+  python3 -m data_pipeline.scraper export-sections                                      # clean docs -> data/output/sections.json
+  python3 -m data_pipeline.scraper ingest-internal [--dir D] [--out O]                   # internal .txt -> clean docs (never in git)
 """
 import argparse
 import json
@@ -17,9 +17,9 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
 
-from scraper import config, links, pipeline, registry
-from scraper.fetch import Fetcher
-from scraper.policy import Policy
+from data_pipeline.scraper import config, links, pipeline, registry
+from data_pipeline.scraper.fetch import Fetcher
+from data_pipeline.scraper.policy import Policy
 
 log = logging.getLogger("scraper")
 
@@ -172,12 +172,12 @@ def cmd_export_sections(args):
 
 
 def cmd_ingest_internal(args):
-    from scraper import internal
+    from data_pipeline.scraper import internal
     internal.ingest(args.dir, args.out)
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(prog="python3 -m scraper", description=__doc__,
+    p = argparse.ArgumentParser(prog="python3 -m data_pipeline.scraper", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
 

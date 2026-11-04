@@ -1,4 +1,4 @@
-from scraper import config, links
+from data_pipeline.scraper import config, links
 
 SAMPLE = """# Compiled public URL list: knowledge categories 1, 2 and 10
 # Duplicate URLs were removed (first occurrence kept).

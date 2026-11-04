@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from scraper import internal
+from data_pipeline.scraper import internal
 
 META = "file,title,category,sensitivity,owner,doc_date,notes\n"
 BODY = """# Routing rules
@@ -91,7 +91,7 @@ def test_doc_id_stable_when_file_is_edited(tmp_path):
 
 def test_refuses_folder_inside_repo_that_is_not_gitignored():
     with pytest.raises(SystemExit, match="not gitignored"):
-        internal.check_not_tracked("scraper")          # tracked code folder
+        internal.check_not_tracked("data_pipeline")          # tracked code folder
     internal.check_not_tracked("data/internal")        # gitignored: fine
 
 

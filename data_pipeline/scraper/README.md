@@ -14,20 +14,20 @@ link file -> manifest -> robots.txt + ToS check -> fetch (cached) -> extract (tr
 pip install -r requirements.txt
 echo "SCRAPER_CONTACT=you@bu.edu" >> .env        # goes in the User-Agent; required
 
-python3 -m scraper parse                          # link file -> data/scrape/manifest.jsonl, checks 155/106/127
-python3 -m scraper probe --category 1,2           # robots + headers only: what's usable?
-python3 -m scraper run --category 1,2 --sample-per-domain 2   # pilot
-python3 -m scraper run --category 1,2             # full run (resumable: skips URLs already ok)
-python3 -m scraper show <doc_id or url>           # eyeball one clean doc
-python3 -m scraper report                         # rebuild scrape_report.csv + summary.md
-python3 -m scraper export-sections                # flat data/output/sections.json for chunking/
+python3 -m data_pipeline.scraper parse                          # link file -> data/scrape/manifest.jsonl, checks 155/106/127
+python3 -m data_pipeline.scraper probe --category 1,2           # robots + headers only: what's usable?
+python3 -m data_pipeline.scraper run --category 1,2 --sample-per-domain 2   # pilot
+python3 -m data_pipeline.scraper run --category 1,2             # full run (resumable: skips URLs already ok)
+python3 -m data_pipeline.scraper show <doc_id or url>           # eyeball one clean doc
+python3 -m data_pipeline.scraper report                         # rebuild scrape_report.csv + summary.md
+python3 -m data_pipeline.scraper export-sections                # flat data/output/sections.json for chunking/
 python3 -m pytest tests/scraper                   # offline tests
 ```
 
 Useful `run` flags: `--domain x.com`, `--limit N`, `--refetch` (ignore the raw cache and download
 again), `--force` (re-process URLs already `ok`, e.g. after changing cleaning rules; uses the cache).
 
-On SCC: `qsub -P <project> pipeline/scc/scrape.sh` (see the script for settings).
+On SCC: `qsub -P <project> data_pipeline/scc/scrape.sh` (see the script for settings).
 
 ## Where things go
 
@@ -77,7 +77,7 @@ sections [{heading, level, text}], text`
 
 ## Domain overrides
 
-Edit `scraper/domains.yaml` (keys are hostnames without `www.`; they also match subdomains):
+Edit `data_pipeline/scraper/domains.yaml` (keys are hostnames without `www.`; they also match subdomains):
 
 ```yaml
 example.com:
@@ -90,7 +90,7 @@ other.com:
 
 ## Tuning
 
-Thresholds (min words, delays, retries) and the boilerplate patterns are in `scraper/config.py`.
+Thresholds (min words, delays, retries) and the boilerplate patterns are in `data_pipeline/scraper/config.py`.
 After changing them, `run --force` re-processes from the raw cache without re-hitting any site.
 
 ## Politeness rules
@@ -110,11 +110,11 @@ Build and demo with the synthetic sample instead.
 
 ```bash
 # Synthetic sample (committed, invented data)
-python3 -m scraper ingest-internal --dir data/samples/synthetic_internal
+python3 -m data_pipeline.scraper ingest-internal --dir data/samples/synthetic_internal   # -> data/output/internal_synthetic/
 
 # Real files: a folder git can't see
 INTERNAL_DIR=/projectnb/<project>/internal INTERNAL_OUT=/projectnb/<project>/internal_out \
-  python3 -m scraper ingest-internal
+  python3 -m data_pipeline.scraper ingest-internal
 ```
 
 Input folder: `*.txt` files in this layout (see `data/samples/synthetic_internal/role_glossary_header_format.txt`):

@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "knowledge_unit schema \u2014 not finalized",
+  "description": "Structure placeholder. Rejects every record until the contract is implemented; do not use for ingestion.",
+  "not": {}
+}

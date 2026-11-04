@@ -1,94 +1,135 @@
+# Sales Knowledge Extraction and MCP Retrieval System
 
-<h1 align="center">
-  <br>
-  <a href="https://www.bu.edu/spark/" target="_blank"><img src="https://www.bu.edu/spark/files/2023/08/logo.png" alt="BUSpark" width="200"></a>
-  <br>
-  Salesforce Web-Scraping Knowledge MCP
-  <br>
-</h1>
+BU DS 549 capstone for Salesforce. The current direction is a public sales
+best-practice and know-how retrieval system, pending sponsor confirmation.
+Public recommendations must not be described as proven seller outcomes.
 
-<h4 align="center">Scrape public sales content, turn it into cited knowledge units, and serve them to an AI agent through category-specific MCP tools.</h4>
+## Repository structure
 
-<p align="center">
-  <a href="#key-features">Key Features</a> •
-  <a href="#how-to-use">How To Use</a> •
-  <a href="#project-description">Project Description</a> •
-  <a href="#data-locations">Data Locations</a>
-</p>
-
-## Key Features
-
-The repo has one folder per pipeline stage, so each owner can work in parallel.
-Folders marked *(planned)* do not exist yet.
-
-* `scraper/` - fetch public pages, check robots.txt first (Protego), strip clutter, group text under headings
-* `chunking/` - split sections into chunks
-  - `character.py` fixed-size baseline, `semantic.py` LangChain semantic chunker, `compare.py` side-by-side report
-* `extraction/` *(planned)* - Claude API turns chunks into labeled knowledge units with evidence
-* `embed/` *(planned)* - the one embedding model wrapper, shared by the pipeline AND the MCP server
-* `db/` *(planned)* - Postgres + pgvector schema (numbered SQL migrations) and upsert loader
-* `pipeline/` *(planned)* - SCC batch job scripts that chain the stages
-* `mcp_server/` *(planned)* - MCP server on Heroku: auth, shared retrieval, one tool per category
-  - may import only `embed/`, `common/` and `db/`, so it can be split into its own repo later
-* `eval/` *(planned)* - test questions, expected answers, scoring
-* `data/urls/` - URL lists (committed)
-* `data/samples/` - small reference outputs from the Oct 8 demo (committed)
-* `data/output/` - pipeline run outputs (gitignored)
-
-Internal Salesforce data is never committed. Secrets go in `.env` (see `.env.example`), never in git.
-
-## How To Use
-
-```bash
-# Clone this repository
-$ git clone https://github.com/BU-Spark/ml-web-scraping-knowledge.git
-$ cd ml-web-scraping-knowledge
-$ python3 -m pip install -r requirements.txt
-
-# All commands run from the repo root.
-# 1. Scrape (see scraper/README.md; needs SCRAPER_CONTACT in .env)
-$ python3 -m scraper parse
-$ python3 -m scraper run --category 1,2
-$ python3 -m scraper export-sections   # writes data/output/sections.json for chunking
-
-# 2. Chunk (reads data/output/sections.json)
-$ python3 -m chunking.character 500 50
-$ python3 -m chunking.semantic 90 200
-$ python3 -m chunking.compare          # then open data/output/comparison.html
+```text
+sales-knowledge-project/
+│
+├── README.md
+├── requirements.txt
+├── .env.example
+│
+├── data_pipeline/
+│   ├── scraper/            # scraper package (see data_pipeline/scraper/README.md)
+│   ├── scc/scrape.sh       # SCC batch job for the scraper
+│   ├── cleaner.py          # points to the scraper's cleaning code
+│   ├── chunker.py
+│   ├── extractor.py
+│   ├── validator.py
+│   ├── deduplicator.py
+│   ├── embedder.py
+│   ├── uploader.py
+│   └── run_pipeline.py
+│
+├── prompts/
+│   ├── extraction_prompt.txt
+│   ├── validation_prompt.txt
+│   └── classification_prompt.txt
+│
+├── schemas/
+│   ├── knowledge_unit_schema.json
+│   └── metadata_schema.json
+│
+├── database/
+│   ├── schema.sql
+│   ├── queries.py
+│   └── connection.py
+│
+├── mcp_server/
+│   ├── server.py
+│   ├── tools.py
+│   ├── retrieval.py
+│   ├── filters.py
+│   └── ranking.py
+│
+├── tests/
+│   ├── test_chunking.py
+│   ├── test_extraction.py
+│   ├── test_database.py
+│   └── test_mcp_tools.py
+│
+└── deployment/
+    ├── Procfile
+    ├── runtime.txt
+    └── heroku_notes.md
 ```
 
-To try chunking without scraping, copy `data/samples/sections.json` to `data/output/sections.json`.
+## Setup and implemented commands
 
-The code exactly as shown at the Oct 8 demo is preserved at the `oct8-demo` tag (`git checkout oct8-demo`).
-
-### Branches
-
-Create a new branch from dev, add changes on the new branch you just created.
+Run from the repository root:
 
 ```bash
-$ git checkout dev && git pull
-$ git checkout -b your-branch dev
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+echo "SCRAPER_CONTACT=<team email>" >> .env        # goes in the scraper's User-Agent
+python3 -m data_pipeline.scraper parse                 # link file -> manifest
+python3 -m data_pipeline.scraper run --category 1,2    # scrape (resumable)
+python3 -m data_pipeline.scraper export-sections       # -> data/output/sections.json
+python3 -m data_pipeline.chunker 90 200
+python3 -m chunking.character 500 50
+python3 -m chunking.compare
+python3 -m pytest tests
 ```
 
-Open a Pull Request to dev. Add your PM and TPM as reviewers.
+The scraper writes one clean JSON doc per page to `data/output/scrape/clean/` plus a source
+registry; `export-sections` flattens them into `data/output/sections.json`. Chunkers read it and write
+`chunks_semantic.json` or `chunks_character.json` in the same folder. The comparison
+also writes `comparison.html`. For an offline character-chunking demo:
 
-At the end of the semester during project wrap up open a final Pull Request to main from dev branch.
+```bash
+mkdir -p data/output
+cp data/samples/sections.json data/output/sections.json
+python3 -m chunking.character 500 50
+```
 
-## Project Description
+Semantic chunking requires the listed LangChain/sentence-transformers dependencies
+and downloads its embedding model on first use.
 
-In this section, you should include the project description, either from the client or spark.
+The scraper checks robots.txt with Protego (an unreadable robots.txt counts as blocked),
+uses an honest User-Agent with a contact address, waits 3 s between requests to the same
+site, caches raw pages, and records a status for every URL (`ok`, `blocked_robots`,
+`bot_challenge`, `too_short`, ...). It never works around blocks, paywalls or logins.
+Cleaning is heuristic and may leave some promotional content. Full details, output schema
+and statuses: `data_pipeline/scraper/README.md`. The Oct 8 demo scraper is at tag `oct8-demo`.
 
-Please make sure it reflects what you see on the documents (project description) you recieved.
+## Architecture and knowledge requirements
 
-* Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Donec vel nunc at libero ultrices tincidunt. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Mauris ut ligula nec risus posuere ultricies at et ligula. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
-* Veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+SCC batch processing: URLs → scrape → clean → semantic chunks → LLM extraction →
+validation/classification/deduplication → embeddings → upload to Heroku Postgres.
+Heroku hosts Postgres with pgvector and an authenticated MCP retrieval service.
+Salesforce agents query Heroku; they do not need access to SCC.
 
-## Data locations
+The three categories are Sales Methodology and Process, Segmentation and Territory,
+and Enablement Operations. The source list is `data/urls/public_urls_compiled.txt`
+(412 URLs); run reports are in `data/scrape/` (`summary.md`, `scrape_report.csv`).
 
-In this section, you should include the location of all of your datasets for the project (if applicable)
+Knowledge units should be independent, actionable, and traceable to supporting
+passages and source URLs. Capture context only when supported; leave unknown values
+empty or null. Distinguish practitioner guidance, procedures, research, and case
+evidence. A source recommending an action does not establish its effectiveness.
+The supplied example knowledge-unit schema and proposed MCP tool names are not yet
+final contracts. Preserve source/chunk references for audits and reruns.
 
-<a href="dataset-documentation">Dataset Documentation</a>
-* Location 1: [location]
-  - [description]
-* Location 2: [location]
-  - [description]
+Use compatible embedding models for stored knowledge units and incoming queries.
+Confirm SCC network requirements, API authorization, database/vector support, and
+MCP authentication before implementing those integrations. Internal Salesforce documents
+(markdown .txt) are allowed as of Nov 3: ingest them with
+`python3 -m data_pipeline.scraper ingest-internal`, keep them in gitignored `data/internal/`
+or team-only SCC space, and never commit them. Output docs are marked `visibility: internal`.
+
+## Configuration and collaboration
+
+Secrets belong in approved environment variables or secret management; `.env.example`
+contains names only. The code does not automatically load `.env`. Never commit
+credentials or internal Salesforce data. Heroku hosting does not itself establish
+authentication or authorization.
+
+Work on personal or feature branches based on `dev`. Changes
+may be pushed/integrated directly into `dev`; a PR is required from `dev` to `main`.
+Do not force-push or include AI co-author lines. The Oct 8 demo remains available at
+`oct8-demo`. Keep prompts separate from code and add implementations incrementally.

@@ -1,8 +1,8 @@
 import json
 
-from scraper import __main__ as cli
-from scraper import clean, config, extract, links, pipeline, registry
-from scraper.policy import Policy
+from data_pipeline.scraper import __main__ as cli
+from data_pipeline.scraper import clean, config, extract, links, pipeline, registry
+from data_pipeline.scraper.policy import Policy
 
 from .conftest import fixture, make_fetcher
 
@@ -113,7 +113,7 @@ def test_second_run_skips_ok_rows_and_uses_cache(monkeypatch):
 
 
 def test_redirect_to_generic_page_is_flagged():
-    from scraper import quality
+    from data_pipeline.scraper import quality
     assert quality.redirected_away("https://forcemanagement.com/seller-blog/some-post", "https://www.ascender.co/")
     assert quality.redirected_away("https://www.salesforce.com/in/hub/sales/best-practices/",
                                    "https://www.salesforce.com/in/resources/")
@@ -134,7 +134,7 @@ def test_teasers_and_tab_navigation_are_dropped():
 
 
 def test_sec_keeps_business_item_and_recovers_headings():
-    from scraper import sec
+    from data_pipeline.scraper import sec
     text = "\n".join(["Item 1. | |", "Item 1A. | |",                       # table of contents
                       "ITEM 1. BUSINESS", "Overview", "We sell software to companies of all sizes.",
                       "Sales and Marketing", "We sell primarily through our direct sales force.",

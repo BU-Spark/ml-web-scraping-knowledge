@@ -5,7 +5,7 @@ Each check returns a reason string when it fails, or None when the page passes.
 import re
 from urllib.parse import urlsplit
 
-from scraper import config
+from data_pipeline.scraper import config
 
 PAYWALL_PHRASES = [
     "subscribe to continue reading", "subscribe to read", "to continue reading",

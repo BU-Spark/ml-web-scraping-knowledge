@@ -21,7 +21,7 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
-from scraper import clean, config
+from data_pipeline.scraper import clean, config
 
 HEADING = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
 FENCE = re.compile(r"^\s*(```|~~~)")
@@ -123,7 +123,7 @@ def split_header(text):
 
 def category_from_label(label):
     """'Segmentation and territory (SMB, ...)' -> 2, using the same names as the link file."""
-    from scraper.links import CATEGORY_BY_LABEL
+    from data_pipeline.scraper.links import CATEGORY_BY_LABEL
     low = (label or "").strip().lower()
     for name, number in CATEGORY_BY_LABEL.items():
         if low.startswith(name):
@@ -225,7 +225,10 @@ def ingest_file(path, rel, meta, seen_hashes):
 
 
 def ingest(in_dir=None, out_dir=None, log=print):
-    in_dir, out_dir = Path(in_dir or config.INTERNAL_DIR), Path(out_dir or config.INTERNAL_OUT)
+    in_dir = Path(in_dir or config.INTERNAL_DIR)
+    if out_dir is None and in_dir.resolve() == SYNTHETIC_DIR.resolve():
+        out_dir = config.INTERNAL_OUT.parent / "internal_synthetic"  # never mix with real internal docs
+    out_dir = Path(out_dir or config.INTERNAL_OUT)
     if not in_dir.exists():
         raise SystemExit(f"{in_dir} not found. Set INTERNAL_DIR or create the folder.")
     if in_dir.resolve() == SYNTHETIC_DIR.resolve():

@@ -7,7 +7,7 @@ import re
 import unicodedata
 from collections import Counter
 
-from scraper import config
+from data_pipeline.scraper import config
 
 
 def normalize(text):

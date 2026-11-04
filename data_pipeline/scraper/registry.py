@@ -9,7 +9,7 @@ import json
 import statistics
 from collections import Counter, defaultdict
 
-from scraper import config
+from data_pipeline.scraper import config
 
 COLUMNS = ["doc_id", "url", "final_url", "domain", "category", "section_label", "status", "reason",
            "http_status", "fetch_method", "content_type", "word_count", "content_sha256",
@@ -111,5 +111,5 @@ def summary_markdown(rows, manifest, tos_unreviewed):
 
     out += ["## Domains whose terms of service haven't been reviewed", "",
             "A human should check these and mark them `tos_reviewed: true` or `skip: true` in "
-            "`scraper/domains.yaml`.", "", ", ".join(tos_unreviewed) or "(none)", ""]
+            "`data_pipeline/scraper/domains.yaml`.", "", ", ".join(tos_unreviewed) or "(none)", ""]
     return "\n".join(out)

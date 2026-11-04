@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 
 import requests
 
-from scraper import config
+from data_pipeline.scraper import config
 
 
 class Throttle:

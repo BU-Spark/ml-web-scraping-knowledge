@@ -1,6 +1,6 @@
-from scraper import config
-from scraper.fetch import Throttle
-from scraper.policy import Policy
+from data_pipeline.scraper import config
+from data_pipeline.scraper.fetch import Throttle
+from data_pipeline.scraper.policy import Policy
 
 from .conftest import FakeClock, make_fetcher
 

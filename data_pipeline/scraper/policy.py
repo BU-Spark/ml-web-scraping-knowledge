@@ -10,7 +10,7 @@ import requests
 import yaml
 from protego import Protego
 
-from scraper import config
+from data_pipeline.scraper import config
 
 
 @dataclass

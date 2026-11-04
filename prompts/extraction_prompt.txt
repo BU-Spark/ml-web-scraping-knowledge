@@ -1,0 +1,5 @@
+NOT IMPLEMENTED: extraction prompt. Do not submit this placeholder to an LLM.
+
+Finalize after reviewing source samples and the knowledge-unit schema.
+Preserve supporting passages and URLs. Never invent context, seller experiences,
+or performance outcomes. Source attribution is not evidence of effectiveness.

@@ -1,8 +1,8 @@
 #!/bin/bash -l
 # SCC batch job: run the scraper headless and write pages to project space.
 #
-#   qsub -P <project> pipeline/scc/scrape.sh                 # default: categories 1,2
-#   qsub -P <project> -v CATS=10 pipeline/scc/scrape.sh      # another category
+#   qsub -P <project> data_pipeline/scc/scrape.sh                 # default: categories 1,2
+#   qsub -P <project> -v CATS=10 data_pipeline/scc/scrape.sh      # another category
 #
 # [verify] module name/version (`module avail python3`) and the project space path below.
 # The run is resumable: if the job hits its time limit, just submit it again.
@@ -28,6 +28,6 @@ source .venv/bin/activate
 
 # SCRAPER_CONTACT comes from $REPO/.env (not committed). Scraped text stays in project space.
 export SCRAPER_OUT="$PROJECT_SPACE"
-python -m scraper parse
-python -m scraper run --category "$CATS"
-python -m scraper report
+python -m data_pipeline.scraper parse
+python -m data_pipeline.scraper run --category "$CATS"
+python -m data_pipeline.scraper report

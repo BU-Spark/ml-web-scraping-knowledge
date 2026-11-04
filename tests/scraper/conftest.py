@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from scraper import config
-from scraper.fetch import Fetcher, Throttle
+from data_pipeline.scraper import config
+from data_pipeline.scraper.fetch import Fetcher, Throttle
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

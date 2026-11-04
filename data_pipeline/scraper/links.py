@@ -15,7 +15,7 @@ import re
 from collections import Counter
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from scraper import config
+from data_pipeline.scraper import config
 
 CATEGORY_HEADER = re.compile(r"^#\s*Knowledge category (\d+)\s*:")
 ENABLEMENT_HEADER = re.compile(r"^#\s*Enablement operations\b", re.I)
@@ -101,7 +101,7 @@ def write_manifest(rows, path=None):
 def load_manifest(path=None):
     path = path or config.MANIFEST
     if not path.exists():
-        raise SystemExit(f"{path} not found. Run: python3 -m scraper parse")
+        raise SystemExit(f"{path} not found. Run: python3 -m data_pipeline.scraper parse")
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
