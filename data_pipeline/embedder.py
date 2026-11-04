@@ -9,7 +9,7 @@ import logging
 from pathlib import Path
 import sys
 
-from chunking.semantic import MODEL_NAME, load_embeddings
+from embed import embed_texts
 from data_pipeline.extractor import build_embed_text
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ DEFAULT_IN_PATH = Path("data/output/knowledge_units_validated.json")
 DEFAULT_OUT_PATH = Path("data/output/knowledge_units_embedded.json")
 
 
-def embed_units(units, embed_fn=None, model_name=MODEL_NAME):
+def embed_units(units, embed_fn=None):
     """Populate `embed_text` and `embedding` (list of floats) for each knowledge unit."""
     if not units:
         return []
@@ -28,8 +28,7 @@ def embed_units(units, embed_fn=None, model_name=MODEL_NAME):
             unit["embed_text"] = build_embed_text(unit)
 
     if embed_fn is None:
-        model = load_embeddings(model_name=model_name)
-        embed_fn = model.embed_documents
+        embed_fn = embed_texts
 
     texts = [u["embed_text"] for u in units]
     vectors = embed_fn(texts)
@@ -53,11 +52,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input_path", nargs="?", default=str(DEFAULT_IN_PATH))
     parser.add_argument("output_path", nargs="?", default=str(DEFAULT_OUT_PATH))
-    parser.add_argument("--model", default=MODEL_NAME)
     args = parser.parse_args()
 
     units = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
-    embedded = embed_units(units, model_name=args.model)
+    embedded = embed_units(units)
 
     out_path = Path(args.output_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
