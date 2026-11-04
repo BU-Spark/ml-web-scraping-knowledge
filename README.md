@@ -7,35 +7,55 @@ Public recommendations must not be described as proven seller outcomes.
 ## Repository structure
 
 ```text
-data_pipeline/
-  scraper.py          Download pages, robots checks, logging (implemented)
-  cleaner.py          Remove clutter and group text by heading (implemented)
-  chunker.py          Semantic chunking entry point (implemented)
-  extractor.py        Planned LLM knowledge extraction
-  validator.py        Planned schema and source-support validation
-  deduplicator.py     Planned knowledge-unit deduplication
-  embedder.py         Planned knowledge-unit embeddings
-  uploader.py         Planned Postgres upload
-  run_pipeline.py     Planned batch orchestration
-prompts/              Extraction, validation, classification placeholders
-schemas/              Knowledge-unit and metadata schema placeholders
-database/             SQL schema, query, connection placeholders
-mcp_server/           Server, tools, retrieval, filters, ranking placeholders
-tests/                Offline cleaning/chunking checks; future component files
-deployment/           Heroku configuration placeholders and deployment notes
-chunking/             Retained semantic, character baseline, comparison helpers
-scraper/              Compatibility entry point for the previous scraper command
-data/urls/            Committed source lists (currently one demo URL)
-data/samples/         Committed reference sections and chunks
-data/output/          Generated run outputs (gitignored)
-dataset-documentation/ BU Spark dataset documentation templates
+sales-knowledge-project/
+│
+├── README.md
+├── requirements.txt
+├── .env.example
+│
+├── data_pipeline/
+│   ├── scraper.py
+│   ├── cleaner.py
+│   ├── chunker.py
+│   ├── extractor.py
+│   ├── validator.py
+│   ├── deduplicator.py
+│   ├── embedder.py
+│   ├── uploader.py
+│   └── run_pipeline.py
+│
+├── prompts/
+│   ├── extraction_prompt.txt
+│   ├── validation_prompt.txt
+│   └── classification_prompt.txt
+│
+├── schemas/
+│   ├── knowledge_unit_schema.json
+│   └── metadata_schema.json
+│
+├── database/
+│   ├── schema.sql
+│   ├── queries.py
+│   └── connection.py
+│
+├── mcp_server/
+│   ├── server.py
+│   ├── tools.py
+│   ├── retrieval.py
+│   ├── filters.py
+│   └── ranking.py
+│
+├── tests/
+│   ├── test_chunking.py
+│   ├── test_extraction.py
+│   ├── test_database.py
+│   └── test_mcp_tools.py
+│
+└── deployment/
+    ├── Procfile
+    ├── runtime.txt
+    └── heroku_notes.md
 ```
-
-Python placeholders contain documentation only. Prompt placeholders are not ready
-for LLM use. JSON schema placeholders intentionally reject all records until the
-contracts are finalized. Deployment placeholders are not deployable configuration.
-No database, LLM extraction, end-to-end orchestration, or MCP service is implemented.
-Existing samples and record fields have been preserved.
 
 ## Setup and implemented commands
 
