@@ -13,6 +13,7 @@ import trafilatura
 from bs4 import BeautifulSoup
 from lxml import etree
 
+RECALL_RETRY_WORDS = 300  # below this, also try trafilatura without favor_precision
 HEADING_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6"]
 DROP_TAGS = ["nav", "header", "footer", "aside", "form", "script", "style", "noscript", "iframe", "svg"]
 
@@ -75,9 +76,9 @@ def _walk_xml(el, b):
             _walk_xml(child, b)
 
 
-def _trafilatura_xml(html, url=None):
+def _trafilatura_xml(html, url=None, precision=True):
     xml = trafilatura.extract(html, url=url, output_format="xml", include_tables=True,
-                              include_comments=False, favor_precision=True, include_formatting=False)
+                              include_comments=False, favor_precision=precision, include_formatting=False)
     if not xml:
         return None
     root = etree.fromstring(xml.encode("utf-8"))
@@ -85,8 +86,8 @@ def _trafilatura_xml(html, url=None):
     return main if main is not None else root
 
 
-def sections_trafilatura(html, url=None):
-    main = _trafilatura_xml(html, url)
+def sections_trafilatura(html, url=None, precision=True):
+    main = _trafilatura_xml(html, url, precision)
     if main is None:
         return []
     b = _SectionBuilder()
@@ -100,14 +101,14 @@ def _key(text):
     return re.sub(r"\W+", "", text).lower()
 
 
-def sections_hybrid(html, url=None):
+def sections_hybrid(html, url=None, precision=True):
     """Trafilatura decides WHAT is article text; the page's DOM supplies the headings around it.
 
     Trafilatura sometimes drops headings (e.g. salesforce.com blog). Here we walk the page in
     order and keep a paragraph/list item/table row only if trafilatura also kept it. Headings are
     kept as-is; any heading with no kept text under it is dropped later by clean.py.
     """
-    main = _trafilatura_xml(html, url)
+    main = _trafilatura_xml(html, url, precision)
     if main is None:
         return []
     keep = {_key("".join(el.itertext())) for el in main.iter("p", "item", "row", "quote", "code")}
@@ -214,15 +215,22 @@ def extract_metadata(html, url, domain):
 def extract(html, url, domain):
     """Returns (metadata dict, sections list, extractor name)."""
     meta = extract_metadata(html, url, domain)
-    sections = sections_trafilatura(html, url)
-    method = "trafilatura"
-    # If the page has more headings than trafilatura kept, rebuild the outline from the DOM,
-    # but only if that keeps nearly all of trafilatura's text.
-    hybrid = sections_hybrid(html, url)
     words = lambda secs: sum(len(x["text"].split()) for x in secs)
     heads = lambda secs: sum(1 for x in secs if x["heading"])
+    # Precision mode is the default (less clutter), but on some layouts (e.g. salesforce.com
+    # explainer pages) it throws away nearly the whole article. Then use default mode instead.
+    precision = True
+    sections = sections_trafilatura(html, url, precision=True)
+    method = "trafilatura"
+    if words(sections) < RECALL_RETRY_WORDS:
+        fuller = sections_trafilatura(html, url, precision=False)
+        if words(fuller) >= 2 * max(words(sections), 1):
+            sections, method, precision = fuller, "trafilatura_default", False
+    # If the page has more headings than trafilatura kept, rebuild the outline from the DOM,
+    # but only if that keeps nearly all of trafilatura's text.
+    hybrid = sections_hybrid(html, url, precision)
     if heads(hybrid) > heads(sections) and words(hybrid) >= 0.9 * words(sections):
-        sections, method = hybrid, "trafilatura+dom_headings"
+        sections, method = hybrid, method + "+dom_headings"
     if sum(len(s["text"].split()) for s in sections) < 50:
         fallback = sections_soup(html)
         if sum(len(s["text"].split()) for s in fallback) > sum(len(s["text"].split()) for s in sections):

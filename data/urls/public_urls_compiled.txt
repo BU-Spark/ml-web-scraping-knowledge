@@ -178,9 +178,9 @@ https://blog.hubspot.com/sales/banter-sales-qualification-framework
 https://blog.hubspot.com/sales/gpct-sales-qualification
 
 # Knowledge category 2: Segmentation and territory (SMB, Commercial, Enterprise)
-# Total URLs: 113
+# Total URLs: 130
 #
-# Salesforce public guidance: 10-K description of how Salesforce sells, current and historical posted segment bands, SMB sales guide, enterprise sales, field vs inside sales, channel sales, territories and sales plans, capacity planning, lead management, sales roles (SDR/BDA/BDR/SE/AE), Trailhead modules on territory planning and account-based selling (25)
+# Salesforce public guidance: 10-K description of how Salesforce sells, current and historical posted segment bands, SMB sales guide, enterprise sales, field vs inside sales, channel sales, territories and sales plans, capacity planning, lead management, sales roles (SDR/BDA/BDR/SE/AE), Trailhead modules on territory planning and account-based selling (28)
 https://trailhead.salesforce.com/content/learn/modules/account-based-selling/explore-and-create-account-plans
 https://trailhead.salesforce.com/content/learn/modules/account-based-selling/get-started-with-account-based-selling
 https://trailhead.salesforce.com/content/learn/modules/sales-territories-and-forecasting/design-territories-and-crush-your-sales-goals
@@ -206,6 +206,10 @@ https://www.salesforce.com/sales/what-is-field-sales/
 https://www.salesforce.com/sales/what-is-lead-management/
 https://www.salesforce.com/small-business/sales/smb-sales-guide/
 https://www.sec.gov/Archives/edgar/data/1108524/000110852426000060/crm-20260131.htm
+# Replacements for failed links (added Nov 3)
+https://www.salesforce.com/resources/articles/sales-territory-mapping/
+https://www.salesforce.com/in/hub/sales/sales-territory-optimization/
+https://salesforce.com/resources/articles/sales-operations-101
 #
 # Competitor public filings: how HubSpot, Adobe, Microsoft, Oracle and SAP segment customers and cover each segment - competitor practices, not Salesforce practices (6)
 https://blogs.partner.microsoft.com/mpn/small-business-the-opportunity-for-business-transformation
@@ -215,7 +219,7 @@ https://www.sec.gov/Archives/edgar/data/1404655/000119312526046646/hubs-20251231
 https://www.sec.gov/Archives/edgar/data/789019/000095017025100235/msft-20250630.htm
 https://www.sec.gov/Archives/edgar/data/796343/000079634325000004/adbe-20241129.htm
 #
-# Sales roles and title families: AE families (by segment, new vs existing customers, specialty, seniority) and non-AE roles (SDR/BDR, presales, partner managers); includes GitLab's public job families - comparison point for Salesforce's internal role families (11)
+# Sales roles and title families: AE families (by segment, new vs existing customers, specialty, seniority) and non-AE roles (SDR/BDR, presales, partner managers); includes GitLab's public job families - comparison point for Salesforce's internal role families (13)
 https://blog.bridgegroupinc.com/sales-development-metrics
 https://handbook.gitlab.com/handbook/sales/
 https://handbook.gitlab.com/job-families/sales
@@ -227,6 +231,9 @@ https://www.bls.gov/ooh/sales/sales-engineers.htm
 https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/future-of-b2b-sales-building-the-right-team
 https://www.presalescollective.com/content/what-is-presales
 https://www.techtarget.com/searchitchannel/definition/partner-account-manager-PAM
+# Replacements for failed links (added Nov 3)
+https://pipeline.zoominfo.com/sales/sdr-ae-alignment
+https://www.salesforce.com/blog/small-business/scale-a-sales-team/
 #
 # Public company examples: GitLab, PostHog, Langfuse and Yubico segmentation, routing and coverage rules - their practices, not Salesforce practices (6)
 https://handbook.gitlab.com/handbook/customer-success/comm-sales
@@ -236,7 +243,7 @@ https://investors.yubico.com/en/what-we-do/business-model/
 https://langfuse.com/handbook/gtm/customer-success
 https://posthog.com/handbook/growth/sales/lead-scoring
 #
-# Segment definitions: SMB, mid-market and enterprise size cutoffs (SBA, Census, Gartner, NCMM, EU) and how to segment (9)
+# Segment definitions: SMB, mid-market and enterprise size cutoffs (SBA, Census, Gartner, NCMM, EU) and how to segment (10)
 https://blog.hubspot.com/service/b2b-customer-segmentation
 https://blog.workday.com/en-ca/what-are-small-medium-enterprises-smes.html
 https://single-market-economy.ec.europa.eu/smes/sme-fundamentals/sme-definition_en
@@ -246,8 +253,10 @@ https://www.gartner.com/en/information-technology/glossary/midsize-enterprise-ms
 https://www.middlemarketcenter.org/ten-years-of-ncmm/
 https://www.sba.gov/document/support--table-size-standards
 https://www.viola-group.com/?p=721
+# Replacements for failed links (added Nov 3)
+https://abmatic.ai/blog/account-segmentation-playbook-b2b
 #
-# Segment motions: how SMB, mid-market and enterprise selling differ (13)
+# Segment motions: how SMB, mid-market and enterprise selling differ (15)
 https://blog.hubspot.com/sales/enterprise-sales
 https://cloud.substack.com/p/why-smb-and-enterprise-sales-have
 https://dock.us/library/long-sales-cycle
@@ -261,8 +270,11 @@ https://theleapadvisor.substack.com/p/metrics-for-high-velocity-sales
 https://www.dock.us/library/mid-market-sales
 https://www.saastr.com/how-is-low-mid-ticket-sales-different-from-enterprise-sales
 https://www.yesware.com/blog/smb-sales
+# Replacements for failed links (added Nov 3)
+https://www.dock.us/library/how-to-move-upmarket-guide-to-enterprise-sales
+https://www.salesforce.com/blog/small-business/startups-bring-innovation-to-sales-strategies/
 #
-# Coverage: field vs inside vs partners and customer success by segment (20)
+# Coverage: field vs inside vs partners and customer success by segment (23)
 https://alexandergroup.com/?p=2699
 https://blog.hubspot.com/sales/outside-sales-guide
 https://blog.hubspot.com/service/customer-success-model
@@ -283,8 +295,12 @@ https://www.gainsight.com/blog/tech-touch-customer-success/
 https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/the-future-of-b2b-sales-is-hybrid
 https://www.mckinsey.com/capabilities/operations/our-insights/inside-sales-outsize-impact-an-interview-with-alice-coatalem-of-hewlett-packard-enterprise
 https://www.strategyand.pwc.com/us/en/reports/2007-2014/the-adaptive-sales-force.pdf
+# Replacements for failed links (added Nov 3)
+https://umbrex.com/services/sales/sales-organization-design/inside-versus-field-sales-model/
+https://salesfolks.com/post/Inside-and-Field-Hybrid-Sales-Teams
+https://alexandergroup.com/?p=3091
 #
-# Territory design: carving, balancing and managing territories (8)
+# Territory design: carving, balancing and managing territories (12)
 https://alexandergroup.com/insights/territory-design-the-gateway-to-increased-sales-productivity/
 https://blog.hubspot.com/sales/how-to-strategically-divide-your-sales-territories
 https://news.darden.virginia.edu/articles/get-off-my-turf-assigning-sales-territories
@@ -293,13 +309,21 @@ https://revopscoop.substack.com/p/revops-co-op-weekly-32-territory
 https://www.alexandergroup.com/insights/do-sales-reps-or-territories-drive-performance/
 https://www.gong.io/blog/sales-territory-planning
 https://www.salesforceben.com/territory-management-in-salesforce-10-things-you-need-to-know/
+# Replacements for failed links (added Nov 3)
+https://spotio.com/blog/sales-territory-design/
+https://pipeline.zoominfo.com/sales/sales-territory-plan
+https://syncgtm.com/blog/how-to-develop-a-sales-territory
+https://www.salesforce.com/quotable/articles/how-salesforce-approaches-territory-planning/
 #
-# Ownership and routing: rules of engagement, account hierarchies, lead routing, named accounts (5)
+# Ownership and routing: rules of engagement, account hierarchies, lead routing, named accounts (7)
 https://churnzero.com/blog/rules-of-engagement-for-customer-success-and-sales-considerations-and-examples/
 https://dspace.lib.cranfield.ac.uk/handle/1826/13468
 https://leandata.com/blog/routing-inbound-leads
 https://www.leandata.com/blog/lead-to-account-matching/
 https://www.leandata.com/blog/resources/routing/
+# Replacements for failed links (added Nov 3)
+https://www.leandata.com/blog/account-hierarchy-routing/
+https://leandata.com/blog/salesforce-lead-routing-automation
 #
 # Capacity and economics: quota, ramp and headcount by segment (3)
 https://blog.bridgegroupinc.com/2024-ae-metrics-compensation-benchmark

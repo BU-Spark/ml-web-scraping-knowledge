@@ -28,7 +28,7 @@ SECTIONS_EXPORT = Path("data/output/sections.json")  # old flat format the chunk
 
 # ---- Categories (numbers from the client's list) ----
 CATEGORY_NAMES = {1: "sales_methodology", 2: "segmentation_territory", 10: "enablement_operations"}
-EXPECTED_COUNTS = {1: 155, 2: 113, 10: 127}  # cat 2: +7 competitor GTM links (Nov 3)
+EXPECTED_COUNTS = {1: 155, 2: 130, 10: 127}  # cat 2 (Nov 3): +7 competitor GTM links, +17 replacements
 
 
 # ---- Identity ----
@@ -77,6 +77,8 @@ BOILERPLATE_LINE_PATTERNS = [
     "book a demo", "request a demo", "schedule a demo", "get a demo", "start your free trial",
     "we use cookies", "cookie policy", "accept cookies", "cookie settings",
     "share this article", "share this post", "share on linkedin", "share on twitter",
+    "start your trial", "start your free trial", "try it free", "free for 30 days", "no credit card",
+    "take the next step with us", "contact sales", "talk to an expert",
     "follow us on", "related posts", "related articles", "you may also like",
     "recommended for you", "read more:", "back to top", "all rights reserved",
 ]
