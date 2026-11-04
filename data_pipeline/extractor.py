@@ -241,7 +241,7 @@ def enrich_unit(raw_unit, chunk, unit_index, extracted_at=None):
     chunk_id = chunk.get("chunk_id", f"chunk-{unit_index}")
     domain = chunk.get("domain") or re.sub(r"^https?://([^/]+).*$", r"\1", chunk.get("source_url", ""))
     page_title = chunk.get("page_title") or chunk.get("heading") or chunk.get("source_url", "Untitled")
-    section_id = chunk.get("section_id", 0)
+    section_id = chunk.get("section_index", chunk.get("section_id", 0))
     char_start = chunk.get("start", chunk.get("char_start"))
     char_end = chunk.get("end", chunk.get("char_end"))
 
