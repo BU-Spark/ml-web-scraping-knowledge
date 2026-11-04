@@ -4,3 +4,5 @@ protego
 langchain-experimental
 langchain-huggingface
 sentence-transformers
+anthropic
+jsonschema

@@ -1,6 +1,204 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "knowledge_unit schema \u2014 not finalized",
-  "description": "Structure placeholder. Rejects every record until the contract is implemented; do not use for ingestion.",
-  "not": {}
+  "title": "Sales Knowledge Unit Schema v0.1",
+  "description": "Contract for discrete, source-supported sales knowledge units (MVP Schema v0.1).",
+  "type": "object",
+  "required": [
+    "unit_id",
+    "chunk_id",
+    "section_id",
+    "claim",
+    "evidence_quote",
+    "level",
+    "unit_type",
+    "context",
+    "outcome",
+    "topic",
+    "category",
+    "source_url",
+    "domain",
+    "publisher",
+    "published_date",
+    "page_title",
+    "heading",
+    "source_type",
+    "sensitivity",
+    "source_tier",
+    "extracted_at",
+    "embed_text",
+    "embedding"
+  ],
+  "properties": {
+    "unit_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "chunk_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "section_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 15,
+      "description": "One standalone sentence stating the finding or actionable practice."
+    },
+    "evidence_quote": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Exact verbatim substring from the source chunk (may join two spans from the chunk with '...')."
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "common_sense",
+        "content",
+        "know_how",
+        "knowledge"
+      ],
+      "description": "Retention rule: keep know_how and knowledge; drop common_sense and content."
+    },
+    "unit_type": {
+      "type": "string",
+      "enum": [
+        "how_to",
+        "definition",
+        "statistic",
+        "example"
+      ]
+    },
+    "context": {
+      "type": "object",
+      "required": [
+        "who",
+        "industry",
+        "company_size",
+        "situation"
+      ],
+      "properties": {
+        "who": {
+          "type": "string",
+          "minLength": 1
+        },
+        "industry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "company_size": {
+          "type": "string",
+          "minLength": 1
+        },
+        "situation": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outcome": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Explicitly measured result from the text, or null if the source only recommends an action."
+    },
+    "topic": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Short canonical label such as 'BANT', 'call coaching', or 'objection handling'."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "1. Sales Methodology and Process",
+        "2. Segmentation and Territory",
+        "10. Enablement Operations"
+      ]
+    },
+    "source_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1
+    },
+    "publisher": {
+      "type": "string",
+      "minLength": 1
+    },
+    "published_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "page_title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "heading": {
+      "type": "string"
+    },
+    "char_start": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "char_end": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "external",
+        "internal"
+      ]
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": [
+        "public",
+        "internal",
+        "confidential"
+      ]
+    },
+    "source_tier": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ]
+    },
+    "extracted_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "embed_text": {
+      "type": "string",
+      "minLength": 15
+    },
+    "embedding": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "number"
+      }
+    }
+  },
+  "additionalProperties": false
 }
