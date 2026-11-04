@@ -166,12 +166,12 @@ SCC batch jobs (BU Shared Computing Cluster)            Heroku (app: bu-research
   automated access or its ToS forbids it (some forbid AI training, e.g. Close.com; OpenStax blocks
   some bots on book paths), **log it and skip; never work around blocks.** Rate-limit politely and
   set an honest user agent.
-- **Data scope conflict is unresolved.** The brief says public web pages only and no proprietary
-  client data, yet also lists internal knowledge as a goal and "public & private layers". Brian
-  shared curated samples and approved Claude API processing for them, but written scope
-  confirmation is pending. **Do not ingest, commit, or store internal Salesforce data until the team
-  confirms it is allowed.** Fallback: demo access control on a clearly labeled synthetic internal
-  sample (would live in `data/samples/synthetic_internal/`). `data/internal/` is gitignored.
+- **Internal data: allowed as of Nov 3** (Nora confirmed with the client; keep the written
+  confirmation on file). Internal files are markdown `.txt` (see `scraper/README.md`). Store them
+  ONLY in gitignored `data/internal/` locally or a team-only SCC project folder, ingest with
+  `python3 -m scraper ingest-internal`, and **never commit them**, paste them into code, tests or
+  samples, or log their text. Laptops holding them need disk encryption; delete at project end.
+  Tests and demos use the invented sample in `data/samples/synthetic_internal/`.
 - **Never commit secrets:** `DATABASE_URL`, `ANTHROPIC_API_KEY`, Heroku credentials, access keys.
   Use env vars / `.env` (gitignored; see `.env.example`) / Heroku config vars.
 - Keep a source registry: every scraped page logged with URL, fetch time, robots/ToS status, and
@@ -183,7 +183,7 @@ SCC batch jobs (BU Shared Computing Cluster)            Heroku (app: bu-research
 
 | Item | Status / fallback |
 |---|---|
-| Internal data allowed under the brief? | Ask for written confirmation; synthetic sample fallback |
+| Internal data allowed under the brief? | Confirmed OK Nov 3 (local `data/internal/` + SCC); never in git |
 | How Salesforce user identity/role is supplied for auth | Asked Brian; unanswered |
 | SCC -> Heroku Postgres connectivity (IP allowlisting) | Test early; fallback: load step from laptop or GitHub Actions |
 | Embedding model / dyno size | bge-small on both sides, or a hosted embedding API |
