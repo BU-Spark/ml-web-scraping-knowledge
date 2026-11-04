@@ -154,8 +154,10 @@ SCC batch jobs (BU Shared Computing Cluster)            Heroku (app: bu-research
 - **Production scraper (Nov 3, `feature/scraper`):** `python3 -m scraper parse|probe|run|report|show|
   export-sections`; see `scraper/README.md`. Page text goes to `$SCRAPER_OUT` (gitignored; SCC project
   space), manifest and reports to `data/scrape/`. UA contact comes from `SCRAPER_CONTACT` in `.env`.
-  PDFs skipped for the MVP; sec.gov filings trimmed to the business item. Pilot (cat 1-2, 2 URLs per
-  domain): 56/73 usable. Blocked/bot-challenged sites are logged and skipped, never worked around.
+  PDFs skipped for the MVP; sec.gov filings trimmed to the business item. Full run Nov 3: 356/412
+  usable (cat 1: 150/155 from 8 domains, Force Management = half; cat 2: 105/130 from 44 domains;
+  cat 10: 101/127 from 45 domains). Blocked/bot-challenged sites (Gartner, McKinsey, ...) are logged
+  and skipped, never worked around. Internal .txt files: `python3 -m scraper ingest-internal`.
 - A 46-item backlog and week-by-week plan exist in a shared plan doc (not in this repo).
 - Not yet built: extraction prompt, DB schema, full SCC pipeline (only `pipeline/scc/scrape.sh`), MCP server, evaluation set,
   shared record shapes (`common/records.py`), shared embedding wrapper (`embed/model.py`).
