@@ -1,0 +1,16 @@
+# Per-domain overrides. Keys are hostnames without "www."; a key also matches its subdomains
+# (e.g. "forrester.com" covers go.forrester.com).
+#
+#   skip: true + reason   never fetched; status blocked_tos. Only a human adds a skip (ask the team first).
+#   tos_reviewed: true    a human has read the site's terms and found no ban on scraping/AI use;
+#                         removes the domain from the "ToS not reviewed" list in summary.md.
+#   delay: <seconds>      minimum gap between requests to this host (if longer than the default/Crawl-delay)
+#   needs_js: true        page needs a browser to render (Playwright fallback; not built yet)
+#   notes: free text
+
+close.com:
+  skip: true
+  reason: "Terms of service restrict AI use of site content"
+
+sec.gov:
+  notes: "SEC requires a User-Agent with contact info; our default 3 s delay keeps us well under their limit."

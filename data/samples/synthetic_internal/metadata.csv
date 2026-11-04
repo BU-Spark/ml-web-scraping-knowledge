@@ -1,0 +1,4 @@
+file,title,category,sensitivity,owner,doc_date,notes
+segment_definitions.txt,SYNTHETIC Segment definitions FY27,2,confidential,Sales Strategy (synthetic),2026-08-01,Invented sample
+account_routing_rules.txt,SYNTHETIC Account routing and ownership rules,2,internal,Sales Operations (synthetic),2026-07-15,Invented sample
+deal_inspection_cadence.txt,SYNTHETIC Deal inspection cadence,1,internal,Sales Excellence (synthetic),2026-06-30,Invented sample

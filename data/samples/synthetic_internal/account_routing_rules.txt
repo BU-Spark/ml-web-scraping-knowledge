@@ -1,0 +1,21 @@
+# SYNTHETIC Account routing and ownership rules
+
+> SYNTHETIC SAMPLE. Invented for testing. Not real Salesforce data.
+
+## Who owns an account
+
+Each account has exactly one owning account executive. Ownership follows the segment and the territory the account's headquarters sits in.
+
+### Parent and child accounts
+
+Child accounts inherit the owner of their ultimate parent when the parent is in Enterprise. In every other segment, each child account is routed on its own employee count.
+
+## Routing new leads
+
+1. Match the lead to an existing account by domain.
+2. If it matches, route it to the account owner.
+3. If it does not match, route it by segment band and region to the round-robin queue.
+
+## Overlap and disputes
+
+When two reps claim the same account, the rep whose territory contains the headquarters keeps it. Disputes that are not resolved within five business days go to the regional sales director.

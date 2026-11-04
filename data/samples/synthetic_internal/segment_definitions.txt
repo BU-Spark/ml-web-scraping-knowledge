@@ -1,0 +1,23 @@
+# SYNTHETIC Segment definitions FY27
+
+> SYNTHETIC SAMPLE. Invented for testing. Not real Salesforce data.
+
+## Why we segment
+
+Accounts are grouped into segments so that each one gets a sales motion and a coverage model that fits its size and complexity. Segment is assigned once a year during planning and only changes mid-year through the exception process below.
+
+## Segment bands
+
+| Segment | Employee count | Primary motion |
+|---|---|---|
+| Small Business | 1-199 | Inside sales, high velocity |
+| Commercial | 200-1,499 | Inside sales with field support |
+| Enterprise | 1,500+ | Field sales, named accounts |
+
+Employee count comes from the account's most recent firmographic refresh. If two sources disagree, the higher count wins.
+
+## Exceptions
+
+- Strategic logos can be moved up one segment with VP approval.
+- Public-sector accounts are always covered by the public-sector team, whatever their size.
+- Contact sales ops for exceptions that are not listed here.
