@@ -117,10 +117,29 @@ INTERNAL_DIR=/projectnb/<project>/internal INTERNAL_OUT=/projectnb/<project>/int
   python3 -m scraper ingest-internal
 ```
 
-Input folder: `*.txt` (markdown `#` headings) plus `metadata.csv` with columns
-`file,title,category,sensitivity,owner,doc_date,notes`. `category` is 1, 2 or 10; `sensitivity`
-is `internal` or `confidential`. A file without a metadata row is flagged (`missing_metadata`),
-never guessed.
+Input folder: `*.txt` files in this layout (see `data/samples/synthetic_internal/role_glossary_header_format.txt`):
+
+```
+TITLE LINE (no #)
+Knowledge category: Segmentation and territory (SMB, Commercial, Enterprise)
+Provenance: where the data came from
+Tags: [INFERRED] = ... [UNKNOWN] = ...
+any other intro lines
+
+## SECTION HEADING (shared suffix)
+- [INFERRED] bullet text ...
+```
+
+- The header (everything before the first `##`) gives the title, category (matched by name to
+  1 / 2 / 10), provenance and tag legend. Other intro lines become an untitled first section.
+- A `(...)` suffix that every heading shares (e.g. `(Salesforce internal, Org62)`) is removed from
+  the headings and stored once as `heading_suffix`.
+- `[IN TITLE]` / `[INFERRED]` / `[UNKNOWN]` tags stay in the text (extraction needs them) and are
+  counted in `confidence_tags`.
+- `metadata.csv` is optional (`file,title,category,sensitivity,owner,doc_date,notes`). When a row
+  exists it overrides the header. A file with no category anywhere is flagged `missing_metadata`.
+- `sensitivity` is `internal` or `confidential`; **if not given it defaults to `confidential`**
+  (most restrictive), never to public.
 
 Output: `$INTERNAL_OUT/clean/<doc_id>.json` and `$INTERNAL_OUT/registry.jsonl`, kept apart from
 public docs. Clean docs have `url: null`, `source_file`, `visibility`, `sensitivity`, and

@@ -1,0 +1,22 @@
+SYNTHETIC SELLER ROLE GLOSSARY (DEMO ORG)
+Knowledge category: Segmentation and territory (SMB, Commercial, Enterprise)
+Provenance: SYNTHETIC SAMPLE. Invented for testing the header format; not real Salesforce data. Every term and number below is made up.
+Tags: [IN TITLE] = stated in the title text. [INFERRED] = guessed, not an official definition. [UNKNOWN] = meaning not confirmed.
+Counts are invented.
+
+## WHAT THIS DATA IS (Synthetic, Demo Org)
+- A made-up glossary that copies the layout of a real internal glossary file.
+- Use it to check that headers, tags and heading suffixes are parsed correctly.
+
+## ROLE ACRONYMS (Synthetic, Demo Org)
+- [IN TITLE] XR = Example Representative. Generates pipeline for closers.
+- [IN TITLE] XC = Example Closer. Carries a quota and closes deals.
+- [INFERRED] XQ = Example Quota Lead. About 42 invented users.
+
+## SEGMENT TERMS (Synthetic, Demo Org)
+- [INFERRED] Tier A = the largest invented customer tier.
+- [UNKNOWN] Tier Z is not defined in this sample.
+- The size cutoffs for each tier are not in this data.
+
+## DATA CAVEATS (Synthetic, Demo Org)
+- Everything here is invented. Do not use it to answer real questions.

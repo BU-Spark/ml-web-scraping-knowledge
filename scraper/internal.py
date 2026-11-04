@@ -3,8 +3,10 @@ scraper writes, marked visibility "internal" so access control can filter them l
 
 Input folder ($INTERNAL_DIR):
   *.txt          markdown text (## headings); other file types are ignored
-  metadata.csv   one row per file: file,title,category,sensitivity,owner,doc_date,notes
-                 (a text file can't say which category it is, so a person fills this in)
+  metadata.csv   OPTIONAL, one row per file: file,title,category,sensitivity,owner,doc_date,notes
+                 (overrides the file header; needed for files without a 'Knowledge category:' line)
+  File header (lines before the first ## heading) may give: a title line, 'Knowledge category: ...',
+  'Provenance: ...' and 'Tags: ...'. Sensitivity defaults to 'confidential' if not given.
 
 Output ($INTERNAL_OUT): clean/<doc_id>.json and registry.jsonl, separate from public docs.
 
@@ -86,38 +88,107 @@ def _now():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+HEADER_KEY = re.compile(r"^(knowledge category|provenance|tags)\s*:\s*(.+)$", re.I)
+CONFIDENCE_TAG = re.compile(r"\[(IN TITLE|INFERRED|UNKNOWN)\]")
+SHARED_SUFFIX = re.compile(r"\s*(\([^()]*\))\s*$")
+
+
+def split_header(text):
+    """Split a file into (header fields, body).
+
+    The header is everything before the first markdown heading. Recognized lines:
+      first line without '#'      -> title (e.g. an ALL-CAPS title line)
+      Knowledge category: <name>  -> category (matched to 1 / 2 / 10)
+      Provenance: <text>          -> provenance
+      Tags: <text>                -> tag legend ([INFERRED] = ..., etc.)
+    Any other header lines stay in the body as an untitled intro section.
+    """
+    lines = text.splitlines()
+    first_heading = next((i for i, ln in enumerate(lines) if HEADING.match(ln)), len(lines))
+    header, intro = {}, []
+    for ln in lines[:first_heading]:
+        stripped = ln.strip()
+        if not stripped:
+            continue
+        m = HEADER_KEY.match(stripped)
+        if m:
+            header[m.group(1).lower().replace(" ", "_")] = m.group(2).strip()
+        elif "title" not in header and not intro:
+            header["title"] = stripped
+        else:
+            intro.append(ln)
+    body = "\n".join(intro + [""] + lines[first_heading:])
+    return header, body
+
+
+def category_from_label(label):
+    """'Segmentation and territory (SMB, ...)' -> 2, using the same names as the link file."""
+    from scraper.links import CATEGORY_BY_LABEL
+    low = (label or "").strip().lower()
+    for name, number in CATEGORY_BY_LABEL.items():
+        if low.startswith(name):
+            return number
+    return None
+
+
+def strip_shared_heading_suffix(sections):
+    """If every heading ends with the same '(...)', e.g. '(Salesforce internal, Org62)', drop it
+    from the headings and return it once, so headings read as their actual topic."""
+    suffixes = {m.group(1) if (m := SHARED_SUFFIX.search(s["heading"])) else None
+                for s in sections if s["heading"]}
+    headed = [s for s in sections if s["heading"]]
+    if len(headed) < 2 or len(suffixes) != 1 or None in suffixes:
+        return sections, None
+    suffix = suffixes.pop()
+    return [s | {"heading": SHARED_SUFFIX.sub("", s["heading"])} if s["heading"] else s for s in sections], suffix
+
+
 def ingest_file(path, rel, meta, seen_hashes):
-    """One file -> (registry row, clean doc or None)."""
+    """One file -> (registry row, clean doc or None).
+
+    Category, title and sensitivity come from metadata.csv when given, otherwise from the file's
+    header. Sensitivity defaults to the most restrictive level ('confidential'), never to public.
+    """
+    meta = meta or {}
     doc_id = doc_id_for(rel)
     row = {"doc_id": doc_id, "source_file": rel, "title": None, "category": None, "sensitivity": None,
            "status": None, "reason": "", "word_count": None, "content_sha256": None,
            "ingested_at": _now(), "clean_path": None}
 
-    if meta is None:
-        return row | {"status": "missing_metadata", "reason": "no row in metadata.csv"}, None
-    try:
-        category = int(meta.get("category", ""))
-    except ValueError:
-        return row | {"status": "bad_metadata", "reason": f"category {meta.get('category')!r} is not a number"}, None
-    if category not in config.CATEGORY_NAMES:
-        return row | {"status": "bad_metadata", "reason": f"unknown category {category}"}, None
-    sensitivity = meta.get("sensitivity", "").lower()
-    if sensitivity not in config.INTERNAL_SENSITIVITY:
-        return row | {"status": "bad_metadata",
-                      "reason": f"sensitivity must be one of {config.INTERNAL_SENSITIVITY}"}, None
-
     try:
         raw = path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
         return row | {"status": "bad_encoding", "reason": "file is not UTF-8 text"}, None
+    header, body = split_header(raw)
 
-    sections, stats = clean.clean_sections(parse_markdown(raw), web=False)
+    if meta.get("category"):
+        try:
+            category = int(meta["category"])
+        except ValueError:
+            return row | {"status": "bad_metadata", "reason": f"category {meta['category']!r} is not a number"}, None
+    elif header.get("knowledge_category"):
+        category = category_from_label(header["knowledge_category"])
+        if category is None:
+            return row | {"status": "bad_metadata",
+                          "reason": f"unknown 'Knowledge category: {header['knowledge_category'][:60]}'"}, None
+    else:
+        return row | {"status": "missing_metadata",
+                      "reason": "no category in metadata.csv or a 'Knowledge category:' header line"}, None
+    if category not in config.CATEGORY_NAMES:
+        return row | {"status": "bad_metadata", "reason": f"unknown category {category}"}, None
+    sensitivity = (meta.get("sensitivity") or "confidential").lower()
+    if sensitivity not in config.INTERNAL_SENSITIVITY:
+        return row | {"status": "bad_metadata",
+                      "reason": f"sensitivity must be one of {config.INTERNAL_SENSITIVITY}"}, None
+
+    sections, stats = clean.clean_sections(parse_markdown(body), web=False)
     first_h1 = next((s["heading"] for s in sections if s["level"] == 1 and s["heading"]), None)
-    title = meta.get("title") or first_h1 or path.stem
+    title = meta.get("title") or header.get("title") or first_h1 or path.stem
     # The file's top "# Title" heading is the doc title, not a section: don't repeat it.
     sections = [s | {"heading": None, "level": 0} if s["level"] == 1 and s["heading"] in (title, first_h1)
                 and i == 0 else s for i, s in enumerate(sections)]
     sections = [s for s in sections if s["heading"] or s["text"]]
+    sections, heading_suffix = strip_shared_heading_suffix(sections)
     text = clean.sections_to_text(title, sections)
     words = sum(len(s["text"].split()) for s in sections)
     sha = hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -129,6 +200,11 @@ def ingest_file(path, rel, meta, seen_hashes):
         return row | {"status": "duplicate_content", "reason": f"same content as {seen_hashes[sha]}"}, None
     seen_hashes[sha] = doc_id
 
+    tag_counts = {}
+    for t in CONFIDENCE_TAG.findall(text):
+        key = t.lower().replace(" ", "_")
+        tag_counts[key] = tag_counts.get(key, 0) + 1
+
     doc = {
         "doc_id": doc_id, "url": None, "source_file": rel, "final_url": None, "canonical_url": None,
         "domain": None, "publisher": "Salesforce (internal)",
@@ -136,6 +212,10 @@ def ingest_file(path, rel, meta, seen_hashes):
         "section_label": None, "title": title, "author": meta.get("owner") or None,
         "published_date": meta.get("doc_date") or None, "modified_date": None,
         "description": meta.get("notes") or None, "language": "en",
+        # From the file header: where the data came from and what its [TAGS] mean. Extraction should
+        # carry these through (e.g. an [INFERRED] line is not an official definition).
+        "provenance": header.get("provenance"), "tag_legend": header.get("tags"),
+        "confidence_tags": tag_counts, "heading_suffix": heading_suffix,
         "retrieved_at": row["ingested_at"], "fetch_method": "file", "extractor": "markdown",
         "content_type": "text/markdown", "word_count": words, "content_sha256": sha,
         "visibility": "internal", "sensitivity": sensitivity, "clean_stats": stats,

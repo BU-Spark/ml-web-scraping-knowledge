@@ -93,3 +93,49 @@ def test_refuses_folder_inside_repo_that_is_not_gitignored():
     with pytest.raises(SystemExit, match="not gitignored"):
         internal.check_not_tracked("scraper")          # tracked code folder
     internal.check_not_tracked("data/internal")        # gitignored: fine
+
+
+HEADER_FORMAT = """SYNTHETIC GLOSSARY (DEMO): ACRONYMS
+Knowledge category: Segmentation and territory (SMB, Commercial, Enterprise)
+Provenance: Invented for this test.
+Tags: [INFERRED] = guessed. [UNKNOWN] = not confirmed.
+Counts are invented.
+
+## ROLE ACRONYMS (Synthetic, Demo)
+- XR = Example Representative. Generates pipeline for the closers on the team.
+- [INFERRED] XC = Example Closer. Carries a quota and closes the deals.
+
+## SEGMENT TERMS (Synthetic, Demo)
+- [UNKNOWN] Tier Z is not defined anywhere in this invented sample document.
+"""
+
+
+def test_header_format_without_metadata_csv(tmp_path):
+    src, out = _setup(tmp_path, {"glossary.txt": HEADER_FORMAT}, [])   # no metadata rows at all
+    rows, docs = _run(src, out)
+    assert rows["glossary.txt"]["status"] == "ok", rows
+    doc = next(iter(docs.values()))
+    assert doc["title"] == "SYNTHETIC GLOSSARY (DEMO): ACRONYMS"
+    assert doc["category"] == 2                                     # from "Knowledge category:" line
+    assert doc["sensitivity"] == "confidential"                     # safest default when not given
+    assert doc["provenance"] == "Invented for this test."
+    assert doc["tag_legend"].startswith("[INFERRED]")
+    assert doc["heading_suffix"] == "(Synthetic, Demo)"
+    assert [s["heading"] for s in doc["sections"]] == [None, "ROLE ACRONYMS", "SEGMENT TERMS"]
+    assert doc["sections"][0]["text"] == "Counts are invented."      # other header lines kept as intro
+    assert doc["confidence_tags"] == {"inferred": 1, "unknown": 1}
+    assert "[INFERRED] XC = Example Closer." in doc["text"]          # tags stay in the text
+    assert "Knowledge category:" not in doc["text"]                  # header fields not duplicated in body
+
+
+def test_metadata_csv_overrides_header(tmp_path):
+    src, out = _setup(tmp_path, {"glossary.txt": HEADER_FORMAT}, ["glossary.txt,Better title,1,internal,,,"])
+    _, docs = _run(src, out)
+    doc = next(iter(docs.values()))
+    assert (doc["title"], doc["category"], doc["sensitivity"]) == ("Better title", 1, "internal")
+
+
+def test_unknown_header_category_is_flagged(tmp_path):
+    src, out = _setup(tmp_path, {"g.txt": HEADER_FORMAT.replace("Segmentation and territory", "Pricing")}, [])
+    rows, _ = _run(src, out)
+    assert rows["g.txt"]["status"] == "bad_metadata"
