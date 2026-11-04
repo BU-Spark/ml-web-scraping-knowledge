@@ -80,15 +80,16 @@ echo "SCRAPER_CONTACT=<team email>" >> .env        # goes in the scraper's User-
 python3 -m data_pipeline.scraper parse                 # link file -> manifest
 python3 -m data_pipeline.scraper run --category 1,2    # scrape (resumable)
 python3 -m data_pipeline.scraper export-sections       # -> data/output/sections.json
-python3 -m data_pipeline.chunker 90 200
+python3 -m data_pipeline.chunker --input data/output/scrape/clean --threshold 90
 python3 -m chunking.character 500 50
 python3 -m chunking.compare
 python3 -m pytest tests
 ```
 
 The scraper writes one clean JSON doc per page to `data/output/scrape/clean/` plus a source
-registry; `export-sections` flattens them into `data/output/sections.json`. Chunkers read it and write
-`chunks_semantic.json` or `chunks_character.json` in the same folder. The comparison
+registry; `export-sections` flattens them into `data/output/sections.json`. The production semantic runner reads clean documents directly and writes
+`data/output/chunking/chunks_semantic.json` plus a summary. The older demo chunkers
+read exported sections and write their outputs under `data/output/`. The comparison
 also writes `comparison.html`. For an offline character-chunking demo:
 
 ```bash
@@ -135,7 +136,7 @@ or team-only SCC space, and never commit them. Output docs are marked `visibilit
 ## Configuration and collaboration
 
 Secrets belong in approved environment variables or secret management; `.env.example`
-contains names only. The code does not automatically load `.env`. Never commit
+contains names only. The scraper loads `.env`; the chunker reads exported environment variables or CLI flags. Never commit
 credentials or internal Salesforce data. Heroku hosting does not itself establish
 authentication or authorization.
 
@@ -143,3 +144,9 @@ Work on personal or feature branches based on `dev`. Changes
 may be pushed/integrated directly into `dev`; a PR is required from `dev` to `main`.
 Do not force-push or include AI co-author lines. The Oct 8 demo remains available at
 `oct8-demo`. Keep prompts separate from code and add implementations incrementally.
+
+## Semantic chunking
+
+See [docs/chunking.md](docs/chunking.md) for the record contract, tags, CLI,
+privacy labels, model settings, and current limitations. Chunks preserve the source
+text and metadata; they are inputs to extraction, not extracted knowledge units.

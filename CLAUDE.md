@@ -27,7 +27,10 @@ below). Do not invent seller experiences, performance gains, or context.
   Run `python3 -m data_pipeline.scraper <parse|probe|run|report|show|export-sections|
   ingest-internal>`; details in data_pipeline/scraper/README.md. data_pipeline/cleaner.py
   points to its cleaning code; data_pipeline/scc/scrape.sh is the SCC batch job.
-- chunking/ retains existing algorithms and comparisons (data_pipeline/chunker.py points to it).
+- chunking/ retains algorithms and comparisons. data_pipeline/chunker.py now reads clean
+  public/internal docs, preserves metadata/access labels and exact source offsets, and writes
+  bounded semantic chunks plus a summary. See docs/chunking.md. No knowledge extraction
+  or final retrieval embeddings happen during chunking.
 - data/urls/public_urls_compiled.txt is the source list (412 URLs, categories 1, 2, 10).
   data/scrape/ holds the manifest and run reports (URLs and statuses only). Scraped page text
   and internal files are gitignored (data/output/, data/internal/); on SCC they live in

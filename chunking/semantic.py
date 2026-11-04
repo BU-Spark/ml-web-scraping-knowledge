@@ -29,18 +29,21 @@ SENTENCE_SPLIT = r"(?<=[.?!])\s+"  # same default LangChain uses
 MIN_SENTENCES_TO_SPLIT = 4  # sections with fewer sentences stay as one chunk
 
 
-def load_embeddings(model_name=MODEL_NAME):
+def load_embeddings(model_name=MODEL_NAME, device="cpu", batch_size=32):
     """Load the free sentence-embedding model (downloads it the first time)."""
     from langchain_huggingface import HuggingFaceEmbeddings
 
     return HuggingFaceEmbeddings(
         model_name=model_name,
-        encode_kwargs={"normalize_embeddings": True},
+        model_kwargs={"device": device},
+        encode_kwargs={"normalize_embeddings": True, "batch_size": batch_size},
     )
 
 
 def make_chunker(embeddings, threshold=90, min_chunk_chars=200):
     """Build the LangChain chunker. `embeddings` is any LangChain Embeddings object."""
+    if not 0 <= threshold <= 100 or min_chunk_chars < 1:
+        raise ValueError("threshold must be 0..100 and min_chunk_chars must be positive")
     from langchain_experimental.text_splitter import SemanticChunker
 
     return SemanticChunker(
@@ -69,12 +72,12 @@ def _locate_spans(text, pieces):
             continue
         pattern = re.compile(r"\s*(" + r"\s+".join(re.escape(w) for w in words) + ")")
         match = pattern.match(text, cursor)
-        if match is None:  # should not happen; fall back to searching ahead
-            match = pattern.search(text, cursor)
         if match is None:
-            raise ValueError(f"could not locate chunk in section text: {piece[:60]!r}")
+            raise ValueError("could not align semantic chunk with original section")
         spans.append((match.start(1), match.end(1)))
         cursor = match.end(1)
+    if text[cursor:].strip():
+        raise ValueError("semantic splitter did not cover the complete section")
     return spans
 
 
