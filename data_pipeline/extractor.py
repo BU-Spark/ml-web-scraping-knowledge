@@ -180,6 +180,9 @@ def infer_source_tier(domain):
 
 def assign_category(raw_unit, chunk):
     """Deterministically assign Area 1, 2, or 10 based on content and model hint."""
+    chunk_cat = CATEGORIES.get(str(chunk.get("category")))
+    if chunk_cat:
+       return chunk_cat
     hint = (raw_unit.get("category_hint") or raw_unit.get("category") or "").strip()
     if hint in CATEGORIES:
         mapped = CATEGORIES[hint]
@@ -247,6 +250,7 @@ def enrich_unit(raw_unit, chunk, unit_index, extracted_at=None):
     visibility = chunk.get("visibility", "public")
     source_type = "internal" if visibility == "internal" else "external"
     sensitivity = chunk.get("sensitivity") or ("confidential" if source_type == "internal" else "public")
+    meta = chunk.get("source_metadata") or {}
 
     outcome_raw = raw_unit.get("outcome")
     outcome = (
@@ -276,8 +280,8 @@ def enrich_unit(raw_unit, chunk, unit_index, extracted_at=None):
         "category": assign_category(raw_unit, chunk),
         "source_url": chunk["source_url"],
         "domain": domain,
-        "publisher": infer_publisher(domain, page_title),
-        "published_date": chunk.get("published_date"),
+        "publisher": meta.get("publisher") or infer_publisher(domain, page_title),
+        "published_date": chunk.get("published_date") or meta.get("published_date"),
         "page_title": page_title,
         "heading": chunk.get("heading", ""),
         "char_start": char_start,
