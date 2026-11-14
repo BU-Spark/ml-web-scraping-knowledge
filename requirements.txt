@@ -13,3 +13,7 @@ sentence-transformers==6.2.0
 
 # Tests
 pytest
+
+# Database (Postgres + pgvector)
+psycopg[binary]>=3.2,<4
+python-dotenv>=1.0
