@@ -35,13 +35,13 @@ Client decisions:
 | Scrape | Done. Last full run Nov 3: 356/412 usable; 56 failed (20 robots, 16 bot challenge, 7 HTTP, 6 too short, 3 redirect, 2 duplicate, 1 paywall, 1 PDF). | dev, `data_pipeline/scraper/`, `data/scrape/summary.md` |
 | Chunk | Done. Heading sections, then SemanticChunker inside each; keeps metadata, access labels, offsets. | dev, `data_pipeline/chunker.py`, `docs/chunking.md` |
 | Extract / filter / validate / embed | Written, being refined. Claude API, forced tool use, temperature 0. Validation has no LLM: schema check, evidence quote must appear verbatim in its chunk, unit URL must match chunk URL. Pilot: 15 chunks → 39 units → 29 kept. | `origin/Tony`, `origin/Aaliyah` only; **not in dev** (dev still has placeholders) |
-| Shared embedding | `all-MiniLM-L6-v2`, 384 dims, normalized. Search text = claim + topic + category + context + outcome. | `embed/model.py` on `origin/Aaliyah`; placeholder in dev |
-| Store | Postgres + pgvector schema and migration runner written, not yet committed or applied anywhere shared. | `feature/pgvector-na`: `database/migrations/001_init.sql`, `database/migrate.py` |
-| MCP server | To do. | `mcp_server/` placeholders |
+| Shared embedding | `all-MiniLM-L6-v2`, 384 dims, normalized. Shared implementation now on Jen; model override is rejected unless it matches migration 001. | `embed/model.py` |
+| Store | Schema, migration runner and loader merged into dev (`97406cb`); shared deployment/application not verified. | `database/migrations/001_init.sql`, `database/migrate.py`, `data_pipeline/uploader.py` |
+| MCP server | Nine tools implemented on Jen with Streamable HTTP, cited retrieval and source lookup; local protocol tests only, not deployed. Audit/scoring use explicitly limited lexical methods. | `mcp_server/`, `database/queries.py`, `docs/mcp_tool_schema.md` |
 
-Known mismatch: the extraction unit schema stores `category` as a label (`"1. Sales Methodology
-and Process"`) and `section_id` as an integer; the DB uses category 1/2/10 (smallint) and text
-`section_id`. The loader must convert until the team picks one.
+Storage contract: DB categories are names without numeric prefixes. The loader converts pipeline
+numbers/slugs/prefixed names to these names. Chunk `section_id` is text; unit `section_id` is the
+integer section index. MCP reads the `served_units` view and its effective access labels.
 
 ## Architecture and layout
 

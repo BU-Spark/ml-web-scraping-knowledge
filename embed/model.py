@@ -1,20 +1,31 @@
-"""Planned: shared embedding interface. Structure placeholder; the model is not chosen yet.
+"""Shared, normalized MiniLM embeddings for ingestion and query processing.
 
-Candidates discussed: bge-m3 (~2 GB RAM, too big for a small Heroku dyno), bge-small, or a hosted
-embedding API. Whatever is chosen, the pipeline and the MCP server must use it identically
-(same model, same normalization), and the vector size must match the database column.
+Migration 001 fixes the store to all-MiniLM-L6-v2 (384 dimensions). A different
+model requires a migration and re-embedding, even if its dimensions happen to match.
 """
 import os
+from functools import lru_cache
+from threading import Lock
 
-# Set via env var so SCC jobs and the Heroku server are configured the same way.
-EMBED_MODEL = os.environ.get("EMBED_MODEL")
+EMBED_MODEL = "all-MiniLM-L6-v2"
+MODEL_LOCK = Lock()
+
+
+@lru_cache(maxsize=1)
+def _load_model():
+    from sentence_transformers import SentenceTransformer
+    return SentenceTransformer(EMBED_MODEL, device="cpu")
 
 
 def embed_texts(texts):
-    """Return one vector (list of floats) per input string, normalized for cosine similarity.
-
-    Contract for both callers:
-      - data_pipeline/embedder.py: embed_texts([unit["embed_text"] for unit in units])
-      - mcp_server/retrieval.py:   embed_texts([question])[0]
-    """
-    raise NotImplementedError("Embedding model not chosen yet; see embed/model.py docstring.")
+    """Return normalized 384-dimensional vectors; load the model on first use."""
+    if os.environ.get("EMBED_MODEL", EMBED_MODEL) != EMBED_MODEL:
+        raise ValueError("EMBED_MODEL must match migration 001: all-MiniLM-L6-v2")
+    texts = list(texts)
+    if not texts:
+        return []
+    if any(not isinstance(text, str) or not text.strip() for text in texts):
+        raise ValueError("Embedding inputs must be nonempty strings")
+    with MODEL_LOCK:
+        vectors = _load_model().encode(texts, normalize_embeddings=True)
+    return [[float(value) for value in vector] for vector in vectors]

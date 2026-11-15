@@ -17,3 +17,6 @@ pytest
 # Database (Postgres + pgvector)
 psycopg[binary]>=3.2,<4
 python-dotenv>=1.0
+
+# Remote MCP server (v1 FastMCP API)
+mcp==1.30.0
