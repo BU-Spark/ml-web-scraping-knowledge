@@ -1,5 +1,9 @@
-NOT IMPLEMENTED: classification prompt. Do not submit this placeholder to an LLM.
+Classify each extracted sales knowledge unit into exactly one primary area required by the MCP retrieval tools:
 
-Finalize after reviewing source samples and the knowledge-unit schema.
-Preserve supporting passages and URLs. Never invent context, seller experiences,
-or performance outcomes. Source attribution is not evidence of effectiveness.
+- "1. Sales Methodology and Process": Prospecting, lead contact, lead qualification (e.g., BANT), discovery questions, value pitching, objection handling, deal structuring, proposal finalization, negotiation, closing, and post-sale customer handoffs.
+- "2. Segmentation and Territory": Account segmentation, ideal customer profile (ICP), territory design, quota allocation, account tiering, and market targeting.
+- "10. Enablement Operations": Sales training, rep onboarding, ramp time reduction, call coaching, sales playbooks, CRM/CPQ tool adoption, content enablement, and sales productivity metrics.
+
+Classification rules:
+1. Base the category on the core operational action or metric in `claim`, `topic`, and `heading`.
+2. Do not infer internal seller performance outcomes from public category labels.
