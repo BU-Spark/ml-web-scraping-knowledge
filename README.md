@@ -145,6 +145,17 @@ may be pushed/integrated directly into `dev`; a PR is required from `dev` to `ma
 Do not force-push or include AI co-author lines. The Oct 8 demo remains available at
 `oct8-demo`. Keep prompts separate from code and add implementations incrementally.
 
+## MCP retrieval tools
+
+Nine MCP tools are implemented against the Postgres `served_units` view. See
+[tool contracts and setup](docs/mcp_tool_schema.md) for local Streamable HTTP usage,
+examples, filters, schema details, and analysis/scoring limitations. Run
+`python3 -m mcp_server.server` after installing requirements and configuring the
+existing store's `DATABASE_URL`. This does not apply migrations or deploy the app.
+Per the latest client decision in `CLAUDE.md`, public and internal units are served
+without login, with labels retained; deployment policy can narrow serving to public.
+This supersedes older authentication-pending notes above.
+
 ## Semantic chunking
 
 See [docs/chunking.md](docs/chunking.md) for the record contract, tags, CLI,
