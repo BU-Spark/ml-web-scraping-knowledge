@@ -21,7 +21,7 @@ DEFAULT_RAW_OUT_PATH = Path("data/output/knowledge_units_all_levels.json")
 EXTRACTION_PROMPT_PATH = Path("prompts/extraction_prompt.txt")
 CLASSIFICATION_PROMPT_PATH = Path("prompts/classification_prompt.txt")
 
-DEFAULT_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5")
+DEFAULT_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
 
 VALID_LEVELS = ("common_sense", "content", "know_how", "knowledge")
 RETAINED_LEVELS = {"know_how", "knowledge"}
@@ -307,21 +307,30 @@ def format_chunk_user_message(chunk):
     return (
         f"SOURCE URL: {chunk.get('source_url', '')}\n"
         f"PAGE TITLE: {chunk.get('page_title', '')}\n"
-        f"SECTION HEADING: {chunk.get('heading', '')}\n"
+        f"SECTION HEADING: {chunk.get('heading') or ''}\n"
         f"CHUNK ID: {chunk.get('chunk_id', '')}\n\n"
         f"CHUNK TEXT:\n{chunk.get('text', '')}"
     )
 
 
+TOOL_CALL_REMINDER = (
+    "\n\nAlways respond by calling the record_knowledge_units tool, "
+    "even if the list of units is empty."
+)
+
+
 def call_claude_on_chunk(chunk, system_prompt, client, model=DEFAULT_MODEL):
-    """Call Anthropic Claude with forced tool-use to extract structured units."""
+    """Call Anthropic Claude to extract structured units via the record_knowledge_units tool.
+
+    claude-sonnet-5-5 does not accept a forced tool_choice, so tool_choice is "auto" and the
+    system prompt tells the model to always answer by calling the tool.
+    """
     response = client.messages.create(
         model=model,
         max_tokens=2048,
-        temperature=0.0,
-        system=system_prompt,
+        system=system_prompt + TOOL_CALL_REMINDER,
         tools=[EXTRACTION_TOOL_SCHEMA],
-        tool_choice={"type": "tool", "name": "record_knowledge_units"},
+        tool_choice={"type": "auto"},
         messages=[{"role": "user", "content": format_chunk_user_message(chunk)}],
     )
     for block in getattr(response, "content", []):
@@ -330,6 +339,10 @@ def call_claude_on_chunk(chunk, system_prompt, client, model=DEFAULT_MODEL):
             return payload.get("units", [])
         if isinstance(block, dict) and block.get("type") == "tool_use":
             return (block.get("input") or {}).get("units", [])
+    logger.warning(
+        "EXTRACT: no record_knowledge_units tool call returned for chunk %s; treating as no units",
+        chunk.get("chunk_id", "?"),
+    )
     return []
 
 
