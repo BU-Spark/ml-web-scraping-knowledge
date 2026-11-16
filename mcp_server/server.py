@@ -45,4 +45,7 @@ def create_server():
 
 
 if __name__ == "__main__":
-    create_server().run(transport="streamable-http")
+    server = create_server()
+    from embed import embed_texts
+    embed_texts(["warm up"])  # load the model now, so the first caller does not wait for it
+    server.run(transport="streamable-http")
