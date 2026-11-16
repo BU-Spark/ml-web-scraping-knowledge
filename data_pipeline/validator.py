@@ -1,4 +1,4 @@
-"""Validate extracted knowledge units against JSON schemas and source chunks.
+"""Validate extracted knowledge units against JSON schemas, source chunks, and epistemic rules.
 
 Run from the repository root:
     python3 -m data_pipeline.validator [units_path] [chunks_path] [output_path]
@@ -52,7 +52,6 @@ def verify_quote_in_chunk(evidence_quote, chunk_text):
     if norm_quote in norm_chunk:
         return True
 
-    # Support ellipsis-joined spans (e.g. "moved from monthly... ramp time fell")
     parts = [p.strip() for p in re.split(r"\.{3,}|\u2026", norm_quote) if p.strip()]
     if len(parts) > 1:
         cursor = 0
@@ -86,8 +85,21 @@ def validate_unit(unit, chunk_map, ku_validator, meta_validator):
         loc = ".".join(str(p) for p in err.path) or "<root>"
         errors.append(f"metadata_schema [{loc}]: {err.message}")
 
-    if unit.get("level") not in RETAINED_LEVELS:
-        errors.append(f"retention_rule: level '{unit.get('level')}' must be dropped")
+    level = unit.get("level")
+    if level not in RETAINED_LEVELS:
+        errors.append(f"retention_rule: level '{level}' must be dropped")
+
+    if unit.get("is_obvious_to_layperson") is True:
+        errors.append("epistemic_gate: unit flagged as is_obvious_to_layperson=True (common_sense)")
+
+    if int(unit.get("specificity_score", 0)) < 3:
+        errors.append(f"epistemic_gate: specificity_score {unit.get('specificity_score')} is below minimum threshold 3")
+
+    if level == "know_how" and not unit.get("actionable_step"):
+        errors.append("epistemic_gate: 'know_how' unit requires a non-empty actionable_step mechanism")
+
+    if level == "knowledge" and not unit.get("outcome"):
+        errors.append("epistemic_gate: 'knowledge' unit requires a non-null empirical/case outcome")
 
     chunk_id = unit.get("chunk_id")
     parent_chunk = chunk_map.get(chunk_id)
@@ -103,7 +115,7 @@ def validate_unit(unit, chunk_map, ku_validator, meta_validator):
 
 
 def validate_batch(units, chunks, ku_schema_path=KU_SCHEMA_PATH, meta_schema_path=META_SCHEMA_PATH):
-    """Validate a list of units against schemas and parent chunks.
+    """Validate a list of units against schemas, epistemic gates, and parent chunks.
 
     Returns (valid_units, rejected_records).
     """

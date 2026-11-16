@@ -1,15 +1,19 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Sales Knowledge Unit Schema v0.1",
-  "description": "Contract for discrete, source-supported sales knowledge units (MVP Schema v0.1).",
+  "title": "Sales Knowledge Unit Schema v0.2 (First-Principles Epistemic Contract)",
+  "description": "Contract for discrete, source-supported sales knowledge units aligned with the Salesforce Unified Context Layer (UCL) Information Spectrum.",
   "type": "object",
   "required": [
     "unit_id",
     "chunk_id",
     "section_id",
     "claim",
+    "actionable_step",
     "evidence_quote",
     "level",
+    "level_rationale",
+    "specificity_score",
+    "is_obvious_to_layperson",
     "unit_type",
     "context",
     "outcome",
@@ -24,6 +28,10 @@
     "source_type",
     "sensitivity",
     "source_tier",
+    "authority_weight",
+    "canonical_claim_hash",
+    "corroborating_sources",
+    "corroboration_count",
     "extracted_at",
     "embed_text",
     "embedding"
@@ -44,7 +52,14 @@
     "claim": {
       "type": "string",
       "minLength": 15,
-      "description": "One standalone sentence stating the finding or actionable practice."
+      "description": "One standalone, de-contextualized sentence stating the finding or actionable practice."
+    },
+    "actionable_step": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Concrete operational mechanism or tactical move a seller executes (required for know_how; null if pure statistic or lacking a concrete mechanism)."
     },
     "evidence_quote": {
       "type": "string",
@@ -59,7 +74,22 @@
         "know_how",
         "knowledge"
       ],
-      "description": "Retention rule: keep know_how and knowledge; drop common_sense and content."
+      "description": "UCL Information Spectrum level. Retention rule: keep know_how and knowledge; drop common_sense and content."
+    },
+    "level_rationale": {
+      "type": "string",
+      "minLength": 10,
+      "description": "First-principles justification for why this unit belongs to its level on the Information Spectrum."
+    },
+    "specificity_score": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "1 = truism/platitude; 2 = generic textbook theory; 3 = named tactical mechanism; 4 = stage/segment-specific workflow; 5 = empirically measured or case-proven finding."
+    },
+    "is_obvious_to_layperson": {
+      "type": "boolean",
+      "description": "Counterfactual layperson test: True if a non-salesperson would already agree with the advice without domain training (forces common_sense drop)."
     },
     "unit_type": {
       "type": "string",
@@ -103,14 +133,14 @@
         "string",
         "null"
       ],
-      "description": "Explicitly measured result from the text, or null if the source only recommends an action."
+      "description": "Explicitly measured result, quantitative benchmark, or proven case outcome from the text, or null if the source only recommends an action."
     },
     "topic": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Short canonical label such as 'BANT', 'call coaching', or 'objection handling'."
+      "description": "Canonical snake_case or short phrase label (e.g., 'BANT', 'call coaching', 'objection handling') normalizing terminology across sources."
     },
     "category": {
       "type": "string",
@@ -181,6 +211,25 @@
         2,
         3
       ]
+    },
+    "authority_weight": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "canonical_claim_hash": {
+      "type": "string",
+      "minLength": 8
+    },
+    "corroborating_sources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "corroboration_count": {
+      "type": "integer",
+      "minimum": 1
     },
     "extracted_at": {
       "type": "string",

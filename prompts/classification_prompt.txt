@@ -1,9 +1,9 @@
-Classify each extracted sales knowledge unit into exactly one primary area required by the MCP retrieval tools:
+Classify each extracted sales knowledge unit into exactly one primary MCP category:
 
-- "1. Sales Methodology and Process": Prospecting, lead contact, lead qualification (e.g., BANT), discovery questions, value pitching, objection handling, deal structuring, proposal finalization, negotiation, closing, and post-sale customer handoffs.
-- "2. Segmentation and Territory": Account segmentation, ideal customer profile (ICP), territory design, quota allocation, account tiering, and market targeting.
-- "10. Enablement Operations": Sales training, rep onboarding, ramp time reduction, call coaching, sales playbooks, CRM/CPQ tool adoption, content enablement, and sales productivity metrics.
+- "1. Sales Methodology and Process": Prospecting, lead contact, lead qualification (e.g., BANT), discovery questions, active listening, value pitching, objection handling, deal structuring, proposal finalization, negotiation, closing, and post-sale customer handoffs.
+- "2. Segmentation and Territory": Account segmentation (SMB, ESM, Mid-Market, Enterprise), ideal customer profile (ICP), territory design, quota allocation, account tiering, and market targeting.
+- "10. Enablement Operations": Sales training, rep onboarding, ramp time reduction, call coaching, sales playbooks, CRM/CPQ tool adoption, customer satisfaction KPIs, content enablement, and sales productivity metrics.
 
 Classification rules:
-1. Base the category on the core operational action or metric in `claim`, `topic`, and `heading`.
-2. Do not infer internal seller performance outcomes from public category labels.
+1. Base the category on the core operational mechanism or metric in `claim`, `actionable_step`, `topic`, and `heading`.
+2. Never infer internal seller performance outcomes from public category labels.
