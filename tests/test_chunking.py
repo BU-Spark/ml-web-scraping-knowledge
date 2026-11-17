@@ -9,7 +9,7 @@ from chunking.semantic import chunk_semantic
 
 class PipelineStructureTests(unittest.TestCase):
     def test_character_chunks_preserve_source_spans(self):
-        sections = json.loads(Path('data/samples/sections.json').read_text())
+        sections = json.loads(Path('data/samples/sections.json').read_text(encoding='utf-8'))
         chunks = chunk_sections(sections)
         self.assertTrue(chunks)
         for chunk in chunks:

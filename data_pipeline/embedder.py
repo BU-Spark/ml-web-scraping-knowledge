@@ -1,4 +1,4 @@
-"""Embed validated knowledge units using the shared sentence-transformers model.
+"""Embed validated/deduplicated knowledge units using the shared sentence-transformers model.
 
 Run from the repository root:
     python3 -m data_pipeline.embedder [input_units_path] [output_units_path]
@@ -15,6 +15,7 @@ from data_pipeline.extractor import build_embed_text
 logger = logging.getLogger(__name__)
 
 DEFAULT_IN_PATH = Path("data/output/knowledge_units_validated.json")
+FALLBACK_DEDUP_PATH = Path("data/output/knowledge_units_deduped.json")
 DEFAULT_OUT_PATH = Path("data/output/knowledge_units_embedded.json")
 
 
@@ -50,11 +51,18 @@ def embed_units(units, embed_fn=None):
 def main():
     logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s", stream=sys.stdout)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input_path", nargs="?", default=str(DEFAULT_IN_PATH))
+    parser.add_argument("input_path", nargs="?", default=None)
     parser.add_argument("output_path", nargs="?", default=str(DEFAULT_OUT_PATH))
     args = parser.parse_args()
 
-    units = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+    if args.input_path:
+        in_path = Path(args.input_path)
+    elif FALLBACK_DEDUP_PATH.exists():
+        in_path = FALLBACK_DEDUP_PATH
+    else:
+        in_path = DEFAULT_IN_PATH
+
+    units = json.loads(in_path.read_text(encoding="utf-8"))
     embedded = embed_units(units)
 
     out_path = Path(args.output_path)
