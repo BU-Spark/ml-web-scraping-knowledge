@@ -26,7 +26,7 @@ DEFAULT_RAW_OUT_PATH = Path("data/output/knowledge_units_all_levels.json")
 EXTRACTION_PROMPT_PATH = Path("prompts/extraction_prompt.txt")
 CLASSIFICATION_PROMPT_PATH = Path("prompts/classification_prompt.txt")
 
-DEFAULT_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5")
+DEFAULT_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
 
 VALID_LEVELS = ("common_sense", "content", "know_how", "knowledge")
 RETAINED_LEVELS = {"know_how", "knowledge"}
@@ -273,7 +273,10 @@ def compute_authority_weight(source_tier, corroboration_count=1):
 
 
 def assign_category(raw_unit, chunk):
-    """Deterministically assign Area 1, 2, or 10 based on content and model hint."""
+    """Deterministically assign Area 1, 2, or 10 based on chunk category, content, and model hint."""
+    chunk_cat = CATEGORIES.get(str(chunk.get("category")))
+    if chunk_cat:
+        return chunk_cat
     hint = (raw_unit.get("category_hint") or raw_unit.get("category") or "").strip()
     mapped = CATEGORIES.get(hint)
 
@@ -442,14 +445,33 @@ def _clean_nullable_str(val):
     return s if s and s.lower() not in ("null", "none", "unknown", "n/a") else None
 
 
+def _parse_section_id(chunk):
+    """Safely resolve integer section_id from section_index or section_id without crashing on string IDs."""
+    raw = chunk.get("section_index", chunk.get("section_id", 0))
+    if isinstance(raw, int):
+        return max(0, raw)
+    if isinstance(raw, str):
+        if raw.isdigit():
+            return int(raw)
+        nums = re.findall(r"\d+", raw)
+        if nums:
+            return int(nums[-1])
+    return 0
+
+
 def enrich_unit(raw_unit, chunk, unit_index, extracted_at=None):
-    """Combine model-extracted fields with code-populated provenance, tiering, and epistemic calibration."""
+    """Combine model-extracted fields with code-populated provenance, visibility, tiering, and epistemic calibration."""
     chunk_id = chunk.get("chunk_id", f"chunk-{unit_index}")
     domain = chunk.get("domain") or re.sub(r"^https?://([^/]+).*$", r"\1", chunk.get("source_url", ""))
     page_title = chunk.get("page_title") or chunk.get("heading") or chunk.get("source_url", "Untitled")
-    section_id = chunk.get("section_id", 0)
+    section_id = _parse_section_id(chunk)
     char_start = chunk.get("start", chunk.get("char_start"))
     char_end = chunk.get("end", chunk.get("char_end"))
+
+    visibility = chunk.get("visibility", "public")
+    source_type = "internal" if visibility == "internal" else "external"
+    sensitivity = chunk.get("sensitivity") or ("confidential" if source_type == "internal" else "public")
+    meta = chunk.get("source_metadata") or {}
 
     outcome = _clean_nullable_str(raw_unit.get("outcome"))
     topic = _clean_nullable_str(raw_unit.get("topic"))
@@ -474,14 +496,15 @@ def enrich_unit(raw_unit, chunk, unit_index, extracted_at=None):
     ).strip()
 
     category = assign_category(raw_unit, chunk)
-    publisher = infer_publisher(domain, page_title)
+    publisher = meta.get("publisher") or infer_publisher(domain, page_title)
+    published_date = chunk.get("published_date") or meta.get("published_date")
     source_tier = infer_source_tier(domain)
     evidence_quote = str(raw_unit.get("evidence_quote", "")).strip()
 
     unit = {
         "unit_id": f"ku-{chunk_id}-{unit_index}",
         "chunk_id": chunk_id,
-        "section_id": int(section_id),
+        "section_id": section_id,
         "claim": claim_str,
         "actionable_step": actionable_step,
         "evidence_quote": evidence_quote,
@@ -497,13 +520,13 @@ def enrich_unit(raw_unit, chunk, unit_index, extracted_at=None):
         "source_url": chunk["source_url"],
         "domain": domain,
         "publisher": publisher,
-        "published_date": chunk.get("published_date"),
+        "published_date": published_date,
         "page_title": page_title,
         "heading": chunk.get("heading", ""),
         "char_start": char_start,
         "char_end": char_end,
-        "source_type": "external",
-        "sensitivity": "public",
+        "source_type": source_type,
+        "sensitivity": sensitivity,
         "source_tier": source_tier,
         "authority_weight": compute_authority_weight(source_tier, corroboration_count=1),
         "canonical_claim_hash": compute_canonical_claim_hash(category, topic, claim_str),
@@ -541,21 +564,30 @@ def format_chunk_user_message(chunk):
     return (
         f"SOURCE URL: {chunk.get('source_url', '')}\n"
         f"PAGE TITLE: {chunk.get('page_title', '')}\n"
-        f"SECTION HEADING: {chunk.get('heading', '')}\n"
+        f"SECTION HEADING: {chunk.get('heading') or ''}\n"
         f"CHUNK ID: {chunk.get('chunk_id', '')}\n\n"
         f"CHUNK TEXT:\n{chunk.get('text', '')}"
     )
 
 
+TOOL_CALL_REMINDER = (
+    "\n\nAlways respond by calling the record_knowledge_units tool, "
+    "even if the list of units is empty."
+)
+
+
 def call_claude_on_chunk(chunk, system_prompt, client, model=DEFAULT_MODEL):
-    """Call Anthropic Claude with forced tool-use to extract structured units."""
+    """Call Anthropic Claude to extract structured units via the record_knowledge_units tool.
+
+    claude-sonnet-5-5 does not accept a forced tool_choice, so tool_choice is "auto" and the
+    system prompt tells the model to always answer by calling the tool.
+    """
     response = client.messages.create(
         model=model,
         max_tokens=2500,
-        temperature=0.0,
-        system=system_prompt,
+        system=system_prompt + TOOL_CALL_REMINDER,
         tools=[EXTRACTION_TOOL_SCHEMA],
-        tool_choice={"type": "tool", "name": "record_knowledge_units"},
+        tool_choice={"type": "auto"},
         messages=[{"role": "user", "content": format_chunk_user_message(chunk)}],
     )
     for block in getattr(response, "content", []):
@@ -564,6 +596,10 @@ def call_claude_on_chunk(chunk, system_prompt, client, model=DEFAULT_MODEL):
             return payload.get("units", [])
         if isinstance(block, dict) and block.get("type") == "tool_use":
             return (block.get("input") or {}).get("units", [])
+    logger.warning(
+        "EXTRACT: no record_knowledge_units tool call returned for chunk %s; treating as no units",
+        chunk.get("chunk_id", "?"),
+    )
     return []
 
 

@@ -12,7 +12,7 @@ from data_pipeline.extractor import (
     compute_authority_weight,
     enrich_unit,
     extract_from_chunks,
-     normalize_company_size,
+    normalize_company_size,
 )
 from data_pipeline.validator import validate_batch, verify_quote_in_chunk
 
@@ -160,6 +160,38 @@ class KnowledgeExtractionTests(unittest.TestCase):
         self.assertEqual(first["category"], "1. Sales Methodology and Process")
         self.assertIsNone(first["outcome"])
 
+    def test_internal_visibility_and_section_index_handling(self):
+        """Extractor preserves section_index, internal visibility,confidential sensitivity, and chunk category."""
+        internal_chunk = dict(self.sample_chunks[5])
+        internal_chunk["section_id"] = "sec-string-id"
+        internal_chunk["section_index"] = 7
+        internal_chunk["visibility"] = "internal"
+        internal_chunk["category"] = "2"
+        internal_chunk["source_metadata"] = {
+            "publisher": "Salesforce Internal Enablement",
+            "published_date": "2026-10-01",
+        }
+
+        raw = {
+            "claim": "Ask prospects what they want to get from the conversation before pitching.",
+            "actionable_step": "Ask the prospect for their goals at the start of the discovery call.",
+            "evidence_quote": "ask them if they’d like to tell you what they need, what’s important to them, and what they want to get from the conversation.",
+            "level": "know_how",
+            "specificity_score": 4,
+            "is_obvious_to_layperson": False,
+            "unit_type": "how_to",
+            "context": {"who": "salespeople", "industry": "unknown", "company_size": "unknown", "situation": "qualification"},
+            "outcome": None,
+            "topic": "lead qualification",
+        }
+        unit = enrich_unit(raw, internal_chunk, 0, extracted_at="2026-11-15")
+        self.assertEqual(unit["section_id"], 7)
+        self.assertEqual(unit["source_type"], "internal")
+        self.assertEqual(unit["sensitivity"], "confidential")
+        self.assertEqual(unit["category"], "2. Segmentation and Territory")
+        self.assertEqual(unit["publisher"], "Salesforce Internal Enablement")
+        self.assertEqual(unit["published_date"], "2026-10-01")
+
     def test_epistemic_calibration_drops_misclassified_platitudes(self):
         """First-principles calibration catches 'Follow up after a meeting' even if LLM labels it know_how."""
         chunk = self.sample_chunks[5]
@@ -178,7 +210,7 @@ class KnowledgeExtractionTests(unittest.TestCase):
         unit = enrich_unit(platitude_raw, chunk, 0, extracted_at="2026-11-15")
         self.assertEqual(unit["level"], "common_sense")
         self.assertEqual(unit["context"]["company_size"], "SMB (small business)")
-        self.assertEqual( normalize_company_size("50,000 employees"), "Enterprise")
+        self.assertEqual(normalize_company_size("50,000 employees"), "Enterprise")
 
     def test_deduplicator_corroborates_same_context_and_preserves_distinct_context(self):
         """Deduplicator merges corroborating sources (Tier 1 anchor first) while keeping SMB vs Enterprise separate."""

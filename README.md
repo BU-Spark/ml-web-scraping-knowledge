@@ -7,35 +7,66 @@ Public recommendations must not be described as proven seller outcomes.
 ## Repository structure
 
 ```text
-data_pipeline/
-  scraper.py          Download pages, robots checks, logging (implemented)
-  cleaner.py          Remove clutter and group text by heading (implemented)
-  chunker.py          Semantic chunking entry point (implemented)
-  extractor.py        Planned LLM knowledge extraction
-  validator.py        Planned schema and source-support validation
-  deduplicator.py     Planned knowledge-unit deduplication
-  embedder.py         Planned knowledge-unit embeddings
-  uploader.py         Planned Postgres upload
-  run_pipeline.py     Planned batch orchestration
-prompts/              Extraction, validation, classification placeholders
-schemas/              Knowledge-unit and metadata schema placeholders
-database/             SQL schema, query, connection placeholders
-mcp_server/           Server, tools, retrieval, filters, ranking placeholders
-tests/                Offline cleaning/chunking checks; future component files
-deployment/           Heroku configuration placeholders and deployment notes
-chunking/             Retained semantic, character baseline, comparison helpers
-scraper/              Compatibility entry point for the previous scraper command
-data/urls/            Committed source lists (currently one demo URL)
-data/samples/         Committed reference sections and chunks
-data/output/          Generated run outputs (gitignored)
-dataset-documentation/ BU Spark dataset documentation templates
+sales-knowledge-project/
+│
+├── README.md
+├── requirements.txt
+├── .env.example
+│
+├── data_pipeline/
+│   ├── scraper/            # scraper package (see data_pipeline/scraper/README.md)
+│   ├── scc/scrape.sh       # SCC batch job for the scraper
+│   ├── cleaner.py          # points to the scraper's cleaning code
+│   ├── chunker.py
+│   ├── extractor.py
+│   ├── validator.py
+│   ├── deduplicator.py
+│   ├── embedder.py
+│   ├── uploader.py
+│   └── run_pipeline.py
+│
+├── embed/                  # shared embedding interface (pipeline AND MCP server)
+│   ├── __init__.py
+│   └── model.py
+│
+├── prompts/
+│   ├── extraction_prompt.txt
+│   ├── validation_prompt.txt
+│   └── classification_prompt.txt
+│
+├── schemas/
+│   ├── knowledge_unit_schema.json
+│   └── metadata_schema.json
+│
+├── database/
+│   ├── schema.sql
+│   ├── queries.py
+│   └── connection.py
+│
+├── mcp_server/
+│   ├── server.py
+│   ├── tools.py
+│   ├── retrieval.py
+│   ├── filters.py
+│   └── ranking.py
+│
+├── tests/
+│   ├── test_chunking.py
+│   ├── test_extraction.py
+│   ├── test_database.py
+│   └── test_mcp_tools.py
+│
+├── eval/                   # planned: demo questions and scoring
+│   ├── README.md
+│   └── run_eval.py
+│
+├── docs/                   # extraction methodology, MCP tool schema (outlines)
+│
+└── deployment/
+    ├── Procfile
+    ├── runtime.txt
+    └── heroku_notes.md
 ```
-
-Python placeholders contain documentation only. Prompt placeholders are not ready
-for LLM use. JSON schema placeholders intentionally reject all records until the
-contracts are finalized. Deployment placeholders are not deployable configuration.
-No database, LLM extraction, end-to-end orchestration, or MCP service is implemented.
-Existing samples and record fields have been preserved.
 
 ## Setup and implemented commands
 
@@ -45,15 +76,20 @@ Run from the repository root:
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install -r requirements.txt
-python3 -m data_pipeline.scraper data/urls/demo_seed.txt
-python3 -m data_pipeline.chunker 90 200
+echo "SCRAPER_CONTACT=<team email>" >> .env        # goes in the scraper's User-Agent
+python3 -m data_pipeline.scraper parse                 # link file -> manifest
+python3 -m data_pipeline.scraper run --category 1,2    # scrape (resumable)
+python3 -m data_pipeline.scraper export-sections       # -> data/output/sections.json
+python3 -m data_pipeline.chunker --input data/output/scrape/clean --threshold 90
 python3 -m chunking.character 500 50
 python3 -m chunking.compare
-python3 -m unittest discover -s tests -v
+python3 -m pytest tests
 ```
 
-The scraper writes `data/output/sections.json`; chunkers read it and write
-`chunks_semantic.json` or `chunks_character.json` in the same folder. The comparison
+The scraper writes one clean JSON doc per page to `data/output/scrape/clean/` plus a source
+registry; `export-sections` flattens them into `data/output/sections.json`. The production semantic runner reads clean documents directly and writes
+`data/output/chunking/chunks_semantic.json` plus a summary. The older demo chunkers
+read exported sections and write their outputs under `data/output/`. The comparison
 also writes `comparison.html`. For an offline character-chunking demo:
 
 ```bash
@@ -63,13 +99,14 @@ python3 -m chunking.character 500 50
 ```
 
 Semantic chunking requires the listed LangChain/sentence-transformers dependencies
-and downloads its embedding model on first use. The previous command
-`python3 -m scraper data/urls/demo_seed.txt` still works.
+and downloads its embedding model on first use.
 
-The scraper checks robots.txt, logs processing steps, and skips explicitly disallowed
-pages. Its existing behavior continues with a warning when robots.txt is unavailable;
-review that policy before running at scale. Cleaning is heuristic and may leave
-promotional content. Runs overwrite their output files, including empty results.
+The scraper checks robots.txt with Protego (an unreadable robots.txt counts as blocked),
+uses an honest User-Agent with a contact address, waits 3 s between requests to the same
+site, caches raw pages, and records a status for every URL (`ok`, `blocked_robots`,
+`bot_challenge`, `too_short`, ...). It never works around blocks, paywalls or logins.
+Cleaning is heuristic and may leave some promotional content. Full details, output schema
+and statuses: `data_pipeline/scraper/README.md`. The Oct 8 demo scraper is at tag `oct8-demo`.
 
 ## Architecture and knowledge requirements
 
@@ -79,8 +116,8 @@ Heroku hosts Postgres with pgvector and an authenticated MCP retrieval service.
 Salesforce agents query Heroku; they do not need access to SCC.
 
 The three categories are Sales Methodology and Process, Segmentation and Territory,
-and Enablement Operations. The approximately 388-URL dataset described in the
-project brief is not included on this branch; only the demo URL list is present.
+and Enablement Operations. The source list is `data/urls/public_urls_compiled.txt`
+(412 URLs); run reports are in `data/scrape/` (`summary.md`, `scrape_report.csv`).
 
 Knowledge units should be independent, actionable, and traceable to supporting
 passages and source URLs. Capture context only when supported; leave unknown values
@@ -91,17 +128,36 @@ final contracts. Preserve source/chunk references for audits and reruns.
 
 Use compatible embedding models for stored knowledge units and incoming queries.
 Confirm SCC network requirements, API authorization, database/vector support, and
-MCP authentication before implementing those integrations. Internal seller-specific
-knowledge is a future possibility, not an approved current deliverable.
+MCP authentication before implementing those integrations. Internal Salesforce documents
+(markdown .txt) are allowed as of Nov 3: ingest them with
+`python3 -m data_pipeline.scraper ingest-internal`, keep them in gitignored `data/internal/`
+or team-only SCC space, and never commit them. Output docs are marked `visibility: internal`.
 
 ## Configuration and collaboration
 
 Secrets belong in approved environment variables or secret management; `.env.example`
-contains names only. The code does not automatically load `.env`. Never commit
+contains names only. The scraper loads `.env`; the chunker reads exported environment variables or CLI flags. Never commit
 credentials or internal Salesforce data. Heroku hosting does not itself establish
 authentication or authorization.
 
-Work on personal branches based on `dev` (this restructuring uses `Jen`). Changes
+Work on personal or feature branches based on `dev`. Changes
 may be pushed/integrated directly into `dev`; a PR is required from `dev` to `main`.
 Do not force-push or include AI co-author lines. The Oct 8 demo remains available at
 `oct8-demo`. Keep prompts separate from code and add implementations incrementally.
+
+## MCP retrieval tools
+
+Nine MCP tools are implemented against the Postgres `served_units` view. See
+[tool contracts and setup](docs/mcp_tool_schema.md) for local Streamable HTTP usage,
+examples, filters, schema details, and analysis/scoring limitations. Run
+`python3 -m mcp_server.server` after installing requirements and configuring the
+existing store's `DATABASE_URL`. This does not apply migrations or deploy the app.
+Per the latest client decision in `CLAUDE.md`, public and internal units are served
+without login, with labels retained; deployment policy can narrow serving to public.
+This supersedes older authentication-pending notes above.
+
+## Semantic chunking
+
+See [docs/chunking.md](docs/chunking.md) for the record contract, tags, CLI,
+privacy labels, model settings, and current limitations. Chunks preserve the source
+text and metadata; they are inputs to extraction, not extracted knowledge units.

@@ -1,4 +1,4 @@
-Classify each extracted sales knowledge unit into exactly one primary MCP category:
+Classify each extracted sales knowledge unit into exactly one primary area required by the MCP retrieval tools:
 
 - "1. Sales Methodology and Process": Prospecting, lead contact, lead qualification (e.g., BANT), discovery questions, active listening, value pitching, objection handling, deal structuring, proposal finalization, negotiation, closing, and post-sale customer handoffs.
 - "2. Segmentation and Territory": Account segmentation (SMB, ESM, Mid-Market, Enterprise), ideal customer profile (ICP), territory design, quota allocation, account tiering, and market targeting.

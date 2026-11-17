@@ -1,0 +1,7 @@
+# Allow-list: the image needs only these. Keeps data/ (incl. internal docs) and .env out of the build.
+*
+!requirements-server.txt
+!embed/
+!database/
+!mcp_server/
+**/__pycache__

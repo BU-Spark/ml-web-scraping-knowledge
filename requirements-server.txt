@@ -1,0 +1,9 @@
+# MCP server only (Dockerfile). The pipeline uses requirements.txt.
+# No PyTorch: the server embeds questions with ONNX Runtime (EMBED_BACKEND=onnx), see embed/model.py.
+mcp==1.30.0
+psycopg[binary]>=3.2,<4
+python-dotenv>=1.0
+onnxruntime==1.32.0
+tokenizers==0.23.3
+huggingface_hub==2.4.0
+numpy==2.5.5

@@ -1,10 +1,11 @@
 Verify whether a candidate knowledge unit passes all epistemic and governance gates before database ingestion:
 
 1. QUOTE VERIFICATION: Every segment of `evidence_quote` must appear verbatim in the source chunk text (ignoring minor whitespace or curly-quote differences).
-2. EPISTEMIC GATE (RETENTION RULE):
-   - Units with `level` in `["common_sense", "content"]` MUST be rejected.
+2. CLAIM FIDELITY: `claim` must accurately reflect the meaning of `evidence_quote` and `heading` without exaggerating certainty.
+3. EPISTEMIC GATE (RETENTION RULE):
+   - Only units with `level` in `["know_how", "knowledge"]` are retained; units with `level` in `["common_sense", "content"]` MUST be rejected.
    - Units with `is_obvious_to_layperson == true` or `specificity_score < 3` MUST be downgraded/rejected as common sense or generic content.
    - Units labeled `"know_how"` MUST have a non-empty `actionable_step` describing a concrete operational mechanism (not a generic truism).
    - Units labeled `"knowledge"` MUST have a non-null `outcome` grounded in the chunk text.
-3. OUTCOME INTEGRITY: Mere goals or expectations ("to set your new customer up for success", "to build trust") are NOT measured outcomes and must have `outcome = null`.
-4. CONTEXT INTEGRITY: Any value in `context` (`who`, `industry`, `company_size`, `situation`) that is not `"unknown"` must be directly supported by the chunk text or section heading.
+4. OUTCOME INTEGRITY: Mere goals or expectations ("to set your new customer up for success", "to build trust") are NOT measured outcomes and must have `outcome = null`.
+5. CONTEXT INTEGRITY: Any value in `context` (`who`, `industry`, `company_size`, `situation`) that is not `"unknown"` must be directly supported by the chunk text or section heading.

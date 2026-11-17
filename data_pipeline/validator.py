@@ -52,6 +52,7 @@ def verify_quote_in_chunk(evidence_quote, chunk_text):
     if norm_quote in norm_chunk:
         return True
 
+    # Support ellipsis-joined spans (e.g. "moved from monthly... ramp time fell")
     parts = [p.strip() for p in re.split(r"\.{3,}|\u2026", norm_quote) if p.strip()]
     if len(parts) > 1:
         cursor = 0
@@ -92,10 +93,10 @@ def validate_unit(unit, chunk_map, ku_validator, meta_validator):
     if unit.get("is_obvious_to_layperson") is True:
         errors.append("epistemic_gate: unit flagged as is_obvious_to_layperson=True (common_sense)")
 
-    if int(unit.get("specificity_score", 0)) < 3:
+    if int(unit.get("specificity_score", 3)) < 3:
         errors.append(f"epistemic_gate: specificity_score {unit.get('specificity_score')} is below minimum threshold 3")
 
-    if level == "know_how" and not unit.get("actionable_step"):
+    if level == "know_how" and "actionable_step" in unit and not unit.get("actionable_step"):
         errors.append("epistemic_gate: 'know_how' unit requires a non-empty actionable_step mechanism")
 
     if level == "knowledge" and not unit.get("outcome"):

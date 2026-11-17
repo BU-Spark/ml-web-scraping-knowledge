@@ -1,2 +1,0 @@
--- Planned Postgres + pgvector schema. No executable SQL yet.
--- Finalize record contracts, embedding dimensions and access rules first.
