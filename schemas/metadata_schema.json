@@ -1,6 +1,103 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "metadata schema \u2014 not finalized",
-  "description": "Structure placeholder. Rejects every record until the contract is implemented; do not use for ingestion.",
-  "not": {}
+  "title": "Sales Knowledge Unit Provenance and Source Metadata Schema",
+  "description": "Validates code-populated source attribution and chunk provenance fields.",
+  "type": "object",
+  "required": [
+    "unit_id",
+    "chunk_id",
+    "section_id",
+    "source_url",
+    "domain",
+    "publisher",
+    "published_date",
+    "page_title",
+    "heading",
+    "source_type",
+    "sensitivity",
+    "source_tier",
+    "extracted_at"
+  ],
+  "properties": {
+    "unit_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "chunk_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "section_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1
+    },
+    "publisher": {
+      "type": "string",
+      "minLength": 1
+    },
+    "published_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "page_title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "heading": {
+      "type": "string"
+    },
+    "char_start": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "char_end": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "external",
+        "internal"
+      ]
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": [
+        "public",
+        "internal",
+        "confidential"
+      ]
+    },
+    "source_tier": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ]
+    },
+    "extracted_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    }
+  },
+  "additionalProperties": true
 }

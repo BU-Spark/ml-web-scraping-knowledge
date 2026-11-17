@@ -1,5 +1,7 @@
-NOT IMPLEMENTED: validation prompt. Do not submit this placeholder to an LLM.
+Verify whether a candidate knowledge unit is faithfully supported by its source chunk before database ingestion:
 
-Finalize after reviewing source samples and the knowledge-unit schema.
-Preserve supporting passages and URLs. Never invent context, seller experiences,
-or performance outcomes. Source attribution is not evidence of effectiveness.
+1. QUOTE VERIFICATION: Every segment of `evidence_quote` must appear verbatim in the source chunk text (ignoring minor whitespace or curly-quote differences).
+2. CLAIM FIDELITY: `claim` must accurately reflect the meaning of `evidence_quote` and `heading` without exaggerating certainty.
+3. OUTCOME INTEGRITY: If `outcome` is non-null, the source chunk must explicitly state that outcome or metric. Mere advice or expectations ("to set your customer up for success") are goals, not proven outcomes, and must have `outcome` set to null.
+4. CONTEXT INTEGRITY: Any value in `context` (`who`, `industry`, `company_size`, `situation`) that is not `"unknown"` must be directly supported by the chunk text or section heading.
+5. RETENTION CHECK: Only units with `level` in `["know_how", "knowledge"]` are retained for embedding and retrieval.

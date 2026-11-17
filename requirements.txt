@@ -20,3 +20,7 @@ python-dotenv>=1.0
 
 # Remote MCP server (v1 FastMCP API)
 mcp==1.30.0
+
+# Extraction and validation (Claude API, schema checks)
+anthropic
+jsonschema
