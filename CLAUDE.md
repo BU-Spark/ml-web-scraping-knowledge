@@ -28,16 +28,16 @@ Client decisions:
 - Keep categories broad and reusable. Stretch: add a category and auto-discover public links for it.
 - Document the workflow, key terms and category definitions (a deliverable).
 
-## Pipeline status (checked Nov 14)
+## Pipeline status (checked Nov 16)
 
 | Stage | Status | Where |
 |---|---|---|
 | Scrape | Done. Last full run Nov 3: 356/412 usable; 56 failed (20 robots, 16 bot challenge, 7 HTTP, 6 too short, 3 redirect, 2 duplicate, 1 paywall, 1 PDF). | dev, `data_pipeline/scraper/`, `data/scrape/summary.md` |
 | Chunk | Done. Heading sections, then SemanticChunker inside each; keeps metadata, access labels, offsets. | dev, `data_pipeline/chunker.py`, `docs/chunking.md` |
-| Extract / filter / validate / embed | Written, being refined. Claude API, forced tool use, temperature 0. Validation has no LLM: schema check, evidence quote must appear verbatim in its chunk, unit URL must match chunk URL. Pilot: 15 chunks → 39 units → 29 kept. | `origin/Tony`, `origin/Aaliyah` only; **not in dev** (dev still has placeholders) |
+| Extract / filter / validate / embed | Full public run done on SCC Nov 16: 6,004 chunks → 4,335 validated units (Aaliyah's extractor/validator), embedded by Tony. Internal chunks not yet extracted. | `origin/Aaliyah`, `origin/Tony` (not merged into dev); outputs in SCC project space |
 | Shared embedding | `all-MiniLM-L6-v2`, 384 dims, normalized. Shared implementation now on Jen; model override is rejected unless it matches migration 001. | `embed/model.py` |
-| Store | Schema, migration runner and loader merged into dev (`97406cb`); shared deployment/application not verified. | `database/migrations/001_init.sql`, `database/migrate.py`, `data_pipeline/uploader.py` |
-| MCP server | Nine tools implemented on Jen with Streamable HTTP, cited retrieval and source lookup; local protocol tests only, not deployed. Audit/scoring use explicitly limited lexical methods. | `mcp_server/`, `database/queries.py`, `docs/mcp_tool_schema.md` |
+| Store | Heroku DB (bu-research) has migration 001 and, since Nov 16, the full public run: 356 docs, 6,004 chunks, 4,335 units. | `database/migrations/001_init.sql`, `database/migrate.py`, `data_pipeline/uploader.py` |
+| MCP server | Nine tools, live on Heroku since Nov 16 (one Basic dyno, Brian approved) at `https://bu-research-7dc3f331235a.herokuapp.com/mcp`; status page at `/`. Query-time embedding via ONNX. Audit/scoring use explicitly limited lexical methods. | `mcp_server/`, `database/queries.py`, `deployment/heroku_notes.md`, `docs/mcp_setup.md` |
 
 Storage contract: DB categories are names without numeric prefixes. The loader converts pipeline
 numbers/slugs/prefixed names to these names. Chunk `section_id` is text; unit `section_id` is the
@@ -127,5 +127,4 @@ labels so internal sources are identifiable. Still never commit internal text to
 
 ## Open questions (ask the user; don't guess)
 
-- Final host for the MCP server and vector DB.
 - Which unit format is standard for `category` and `section_id`.
