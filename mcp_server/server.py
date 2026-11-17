@@ -10,6 +10,7 @@ from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import ToolAnnotations
 
 from mcp_server.filters import allowed_visibility
+from mcp_server.landing import landing
 from mcp_server.tools import TOOL_FUNCTIONS
 
 
@@ -41,6 +42,7 @@ def create_server():
             annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False,
                                         idempotentHint=True, openWorldHint=False),
         )(threaded(function))
+    server.custom_route("/", methods=["GET"])(landing)  # status page for people; agents use /mcp
     return server
 
 

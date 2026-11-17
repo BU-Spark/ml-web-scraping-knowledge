@@ -66,3 +66,13 @@ def sources(conn, identifier, *, identifier_type, visibility, limit):
     with conn.cursor(row_factory=dict_row) as cur:
         cur.execute(sql, (identifier, list(visibility), limit))
         return cur.fetchall()
+
+
+def unit_counts(conn, *, visibility):
+    """Served-unit counts per category, for the status page. Reads no text or vectors."""
+    sql = """SELECT s.category, count(*) FROM served_units s
+        WHERE s.embedding IS NOT NULL AND s.visibility = ANY(%s)
+        GROUP BY s.category ORDER BY s.category"""
+    with conn.cursor() as cur:
+        cur.execute(sql, (list(visibility),))
+        return [(category, count) for category, count in cur.fetchall()]

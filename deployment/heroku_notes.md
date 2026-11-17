@@ -1,7 +1,7 @@
 # Deploying the MCP server to Heroku
 
-Status: ready to deploy, **not deployed**. Deploying needs Brian's approval: it adds a paid
-Basic web dyno (~$7/month) to the shared app `bu-research`.
+Status: **deployed** Nov 16, 2026 with Brian's approval: one paid Basic web dyno (~$7/month) on
+the shared app `bu-research`. Live at https://bu-research-7dc3f331235a.herokuapp.com/mcp.
 
 ## What runs where
 
@@ -30,7 +30,7 @@ Measured locally in a server-only environment (Nov 16): ~215 MB memory, ready in
 `MCP_ALLOWED_HOSTS` must list the public hostname, or every request is rejected with HTTP 421
 (DNS-rebinding protection).
 
-## Deploy (after approval)
+## First deploy (done; one-time setup)
 
 From the repository root, on the branch to deploy:
 
@@ -43,7 +43,26 @@ heroku ps:scale web=1:basic -a bu-research
 heroku logs --tail -a bu-research         # watch startup
 ```
 
+## Updating the live server
+
+| What changed | What to do |
+|---|---|
+| Code (`mcp_server/`, `embed/`, `database/`, Dockerfile, `requirements-server.txt`) | Commit, then `git push heroku HEAD:main`. Heroku rebuilds and restarts (1-2 min). |
+| Data (new or re-extracted units) | Nothing. Run the uploader; the server reads the DB on every call. |
+| Config vars | `heroku config:set ...` restarts the server by itself. |
+
+- Heroku builds the last **commit**, not your working folder: commit first.
+- `HEAD:main` sends the branch you are on, so check out the right branch first. Deploy from `dev`
+  so that dev is what Brian is using.
+- Pushing to GitHub (`origin`) does not deploy.
+- Test a change locally first (run `python3 -m mcp_server.server` with `DATABASE_URL` set, then
+  open http://localhost:8000/ and connect MCP Inspector to http://localhost:8000/mcp).
+- What is live: `git log heroku/main -1 --oneline`; history: `heroku releases -a bu-research`.
+
 ## Check it works
+
+Open https://bu-research-7dc3f331235a.herokuapp.com/ in a browser: it shows the status, the
+number of units per category and the tool list (HTTP 503 if the database cannot be read). Then:
 
 ```
 npx @modelcontextprotocol/inspector

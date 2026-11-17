@@ -3,12 +3,13 @@
 For: anyone connecting an agent to the server (Brian first).
 Full tool reference: [mcp_tool_schema.md](mcp_tool_schema.md). Deployment: [../deployment/heroku_notes.md](../deployment/heroku_notes.md).
 
-> **Status:** not deployed yet. The URL below goes live once the Heroku dyno is approved.
+> **Status:** live since Nov 16, 2026. Open https://bu-research-7dc3f331235a.herokuapp.com/ in a
+> browser to check it is up and see how many knowledge units are loaded.
 
 ## What it is
 
 An MCP server that answers sales questions with short, cited **knowledge units** extracted from
-public sales sources (plus a small set of internal Salesforce documents, labeled as such).
+public sales sources. Units from internal Salesforce documents, when loaded, are labeled as such.
 Every result carries its source URL, publisher, date and the exact supporting quote.
 
 A citation means *a source says this*. It is not evidence that the practice works.
