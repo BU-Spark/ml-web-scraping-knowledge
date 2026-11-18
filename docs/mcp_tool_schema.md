@@ -1,10 +1,5 @@
 # MCP tools and local operation
 
-Implemented on Jen against Nora's `001_init.sql` (merged into dev as `97406cb`).
-The server uses the official Python MCP SDK, pinned to 1.30.0, with stateless
-Streamable HTTP and JSON responses at `/mcp`. No database writes, migrations,
-live web fetches, LLM calls, or deployments happen when invoking these tools.
-
 ## Store contract
 
 `database/migrations/001_init.sql` is authoritative; parts of the older project
